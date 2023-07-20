@@ -1,29 +1,29 @@
-# pc-ex
+# playcanvas-gizmos
 ### Install
 
 ```bash
-npm i pc-ex
+npm i playcanvas-gizmos
 ```
 
-### ES usage:
+### JavaScript / ES6 usage:
 
-```ts
+```js
 // Import all to use extend functions
 import * as pc from "playcanvas";
-import * as pcEX from "pc-ex";
+import * as pcGizmos from "playcanvas-gizmos";
 
 let rotation = new pc.Quat();
 rotation.setLookRotation(position, target, up);
 
 
 // Import named
-import { DebugLine } from"pc-ex";
+import { DebugLine } from "playcanvas-gizmos";
 
 DebugLine.drawLine(start, end, color);
 
 
-// use ex tools
-import { use, RuntimeTransformHandle } from "pc-ex";
+// use gizmos
+import { use, RuntimeTransformHandle } from "playcanvas-gizmos";
 
 // through use api
 let runtimeTransformHandle = use(RuntimeTransformHandle, { mainCamera: thisCamera });
@@ -36,20 +36,20 @@ let runtimeTransformHandle = new RuntimeTransformHandle({ mainCamera: thisCamera
 ```js
 // Import all to use extend functions
 const pc = require("playcanvas");
-const pcEX = require("pc-ex");
+const playcanvasGizmos = require("playcanvas-gizmos");
 
 let rotation = new pc.Quat();
 rotation.setLookRotation(position, target, up);
 
 
 // Import named
-const { DebugLine } = require("pc-ex");
+const { DebugLine } = require("playcanvas-gizmos");
 
 DebugLine.drawLine(start, end, color);
 
 
 // use ex tools
-const { use, RuntimeTransformHandle } = require("pc-ex");
+const { use, RuntimeTransformHandle } = require("playcanvas-gizmos");
 
 // through use api
 let runtimeTransformHandle = use(RuntimeTransformHandle, { mainCamera: thisCamera });
@@ -62,7 +62,7 @@ let runtimeTransformHandle = new RuntimeTransformHandle({ mainCamera: thisCamera
 Old school method
 
 ```html
-<script src="./bin/pcEX.js"></script>
+<script src="./bin/playcanvasGizmos.js"></script>
 <script>
 	
 // use extend functions
@@ -78,10 +78,10 @@ let runtimeTransformHandle = new pc.EXTools.RuntimeTransformHandle({ mainCamera:
 </script>
 ```
 
-For static usage, ambient type definitions can optionally be referenced here `node_modules/pc-ex/bin/pcEX.d.ts`.
+For static usage, ambient type definitions can optionally be referenced here `node_modules/playcanvas-gizmos/bin/playcanvasGizmos.d.ts`.
 ### API Docs
 
-API docs can be found [here](https://thefbplus.github.io/pc-ex/)
+API docs can be found [here](https://thefbplus.github.io/playcanvas-gizmos/)
 
 ***
 
@@ -90,7 +90,7 @@ API docs can be found [here](https://thefbplus.github.io/pc-ex/)
 clone repository
 
 ```bash
-git clone https://github.com/TheFBplus/pc-ex.git
+git clone https://github.com/kungfooman/playcanvas-gizmos.git
 ```
 
 init development environment

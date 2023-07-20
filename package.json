@@ -21,18 +21,7 @@
 		"_docs-readme": "node ./build-scripts/build-readme.js"
 	},
 	"devDependencies": {
-		"@rollup/plugin-typescript": "^8.5.0",
-		"playcanvas": "^1.56.0",
-		"raw-loader": "^4.0.2",
-		"release-it": "^15.4.1",
-		"rimraf": "^3.0.2",
-		"rollup": "^2.79.0",
-		"rollup-plugin-terser": "^7.0.2",
-		"tsc-alias": "^1.7.0",
-		"tslib": "^2.4.0",
-		"typedoc": "^0.23.14",
-		"typedoc-plugin-markdown": "^3.13.6",
-		"typescript": "^4.8.2"
+		"playcanvas": "^1.56.0"
 	},
 	"files": [
 		"bin/*",
@@ -54,5 +43,7 @@
 		"url": "https://github.com/TheFBplus/pc-ex/issues"
 	},
 	"homepage": "https://github.com/TheFBplus/pc-ex#readme",
-	"dependencies": {}
+	"dependencies": {
+		"ts-to-jsdoc": "^1.2.1"
+	}
 }

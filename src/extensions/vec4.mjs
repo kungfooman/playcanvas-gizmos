@@ -8,24 +8,22 @@
 
 import * as pc from "playcanvas";
 
-import { extendClass } from "@/utils/helpers/extend-decorator";
+//import { extendClass } from "../utils/helpers/extend-decorator.mjs";
 
-@extendClass(pc.Vec4)
-export class Vec4_EX extends pc.Vec4
-{
-    private _shaderData: Float32Array;
+// @extendClass(pc.Vec4)
+export class Vec4_EX extends pc.Vec4 {
+    /** @type {Float32Array} */
+    _shaderData;
 
     /**
      * 用于传入shader的数据
      */
-    get shaderData()
-    {
+    get shaderData() {
         this._shaderData = this._shaderData || new Float32Array(4);
         this._shaderData[0] = this.x;
         this._shaderData[1] = this.y;
         this._shaderData[2] = this.z;
         this._shaderData[3] = this.w;
-
         return this._shaderData;
     }
 }

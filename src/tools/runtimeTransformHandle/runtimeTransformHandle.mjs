@@ -26,27 +26,26 @@ import {
 import MeshRaycaster from "./utils/meshRaycaster";
 import Recorder, { Record } from "./utils/recorder";
 
-// RTH选项
-export interface RTHOptions
-{
-    mainCamera: pc.CameraComponent;
-    selectTags?: string;
-    selectNull?: boolean;
-    selectCondition?: () => boolean;
-    enableHotKey?: boolean;
-    enableUndoRedo?: boolean;
-    showHandle?: boolean;
-    showOutline?: boolean;
-    showGrid?: boolean;
-    multiSelect?: boolean;
-};
+/**
+ * @typedef {Object} RTHOptions
+ * @property {pc.CameraComponent} mainCamera
+ * @property {string} [selectTags]
+ * @property {boolean} [selectNull]
+ * @property {function} [selectCondition]
+ * @property {boolean} [enableHotKey]
+ * @property {boolean} [enableUndoRedo]
+ * @property {boolean} [showHandle]
+ * @property {boolean} [showOutline]
+ * @property {boolean} [showGrid]
+ * @property {boolean} [multiSelect]
+ */
 
-// RTH-回调表
-interface RTHEventsMap
-{
-    select: (selectedNodes: pc.Entity[]) => any;
-    focus: (selectedNodes: pc.Entity[]) => any;
-}
+// RTH callback table
+/**
+ * @typedef {object} RTHEventsMap
+ * @property {(selectedNodes: pc.Entity[]): any} select
+ * @property {(selectedNodes: pc.Entity[]): any} focus
+ */
 
 @tool("RuntimeTransformHandle")
 export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>

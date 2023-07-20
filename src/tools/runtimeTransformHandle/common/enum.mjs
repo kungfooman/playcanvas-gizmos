@@ -7,16 +7,14 @@
  */
 
 // 坐标轴类型
-export enum HandleType
-{
-    Translation,
-    Rotation,
-    Scale
-}
+export const HandleType = {
+    Translation: "Translation",
+    Rotation: "Rotation",
+    Scale: "Scale",
+};
 
 // 中心点类型
-export enum PivotType
-{
-    World,
-    Local
-}
+export const PivotType = {
+    World: "World",
+    Local: "Local",
+};

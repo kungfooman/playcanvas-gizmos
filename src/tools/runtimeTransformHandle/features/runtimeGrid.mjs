@@ -1,45 +1,45 @@
-/**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-05-18 17:27:16
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-22 10:49:33
- * @ 详情: 观测相机
- */
-
 import * as pc from "playcanvas";
 
-import { Tool } from "@/utils/helpers/toolBase";
-import { tool } from "@/utils/helpers/useToolHelper";
+import { Tool } from "@/utils/helpers/toolBase.mjs";
+import { tool } from "../../utils/helpers/useToolHelper.mjs";
 
 import { noAmbientEndPS } from "../utils/handleShader";
 
 /**
- * RuntimeGrid选项
+ * @typedef {Object} RuntimeGridOptions
+ * @property {pc.CameraComponent} mainCamera
+ * @property {pc.Vec2} [range]
  */
-export interface RuntimeGridOptions
-{
-    mainCamera: pc.CameraComponent;
-    range?: pc.Vec2;
-};
 
 @tool("RTH_RuntimeGrid")
-export class RTH_RuntimeGrid extends Tool<RuntimeGridOptions, any>
-{
-    private static _layer: pc.Layer;
-    public static get layer()
+export class RTH_RuntimeGrid extends Tool /*<RuntimeGridOptions, any>*/ {
+    /** @type {pc.Layer} */
+    static _layer;
+    static get layer()
     {
         return this._layer || (this._layer = new pc.Layer({ name: "RTH_Grid" })); // grid layer
     }
 
-    // 默认选项
-    protected toolOptionsDefault: RuntimeGridOptions = {
+    /**
+     * 默认选项
+     * @protected
+     * @type {RuntimeGridOptions}
+     */
+    toolOptionsDefault = {
         mainCamera: this.app.systems.camera.cameras[0],
         range: new pc.Vec2(30, 30)
     };
 
-    private grid: pc.Entity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    grid;
 
-    constructor(options: RuntimeGridOptions)
+    /**
+     * @param {RuntimeGridOptions} options 
+     */
+    constructor(options)
     {
         super();
 
@@ -53,11 +53,13 @@ export class RTH_RuntimeGrid extends Tool<RuntimeGridOptions, any>
     }
 
     /**
+     * @public
+     * @override
      * 设置RuntimeGrid选项
-     * @param options RuntimeGrid选项
+     * @param {RuntimeGridOptions} options - The RuntimeGrid options.
+     * @returns {void}
      */
-    public override setOptions(options: RuntimeGridOptions): void
-    {
+    setOptions(options) {
         super.setOptions(options);
 
         const toolOptions = this.toolOptions;
@@ -73,15 +75,15 @@ export class RTH_RuntimeGrid extends Tool<RuntimeGridOptions, any>
     }
 
     /**
-    * 创建grid
-    * @param w grid宽度
-    * @param h grid高度
-    * @param [wd] grid宽维度
-    * @param [hd] grid高维度
-    * @returns  grid
-    */
-    private createGrid(w: number, h: number, wd: number = w, hd: number = h, color: pc.Color = pc.Color.BLACK): pc.Entity
-    {
+     * @private
+     * @param {number} w - The grid width.
+     * @param {number} h - The grid height.
+     * @param {number} wd - The grid width dimension.
+     * @param {number} hd - The grid height dimension.
+     * @param {pc.Color} color 
+     * @returns {pc.Entity} The grid entity.
+     */
+    createGrid(w, h, wd = w, hd = h, color = pc.Color.BLACK) {
         const points = new Float32Array(3 * (wd + hd + 2) * 2);
         const dw = w / wd;
         const dh = h / hd;
@@ -129,8 +131,12 @@ export class RTH_RuntimeGrid extends Tool<RuntimeGridOptions, any>
         return grid;
     }
 
-    protected override onDisable(): void
-    {
+    /**
+     * @protected
+     * @override
+     * @returns {void}
+     */
+    onDisable() {
         this.grid && this.grid.destroy();
     }
 }

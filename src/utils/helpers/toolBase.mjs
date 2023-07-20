@@ -1,23 +1,21 @@
-/**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-07 16:09:29
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-26 17:16:18
- * @ 详情: 工具类扩展辅助
- */
-
 import * as pc from "playcanvas";
 
-import { cast } from "./extend-decorator";
+import { cast } from "./extend-decorator.mjs";
 
 export abstract class Tool<Options extends { [optionName: string]: any }, EventsMap extends { [callbackName: string]: any }>
 {
-    public app: pc.AppBase;
+    /** @type {pc.AppBase} */
+    app;
 
-    protected toolOptionsDefault: Options;
-    public toolOptions: Options;
-
-    private _enabled: boolean;
+    /**
+     * @protected
+     * @type {Options}
+     */
+    toolOptionsDefault;
+    /** @type {Options} */
+    toolOptions;
+    /** @type {boolean} */
+    _enabled;
 
     /**
      * 创建新的工具实例
@@ -105,29 +103,31 @@ export abstract class Tool<Options extends { [optionName: string]: any }, Events
     }
     /**
      * 检测是否监听此事件
-     * @param eventName 事件名称 
-     * @returns 是否监听此事件
+     * @template {keyof EventsMap} EventName
+     * @param {EventName} eventName 事件名称 
+     * @returns {boolean} 是否监听此事件
      */
-    public hasEvent<EventName extends keyof EventsMap>(eventName: EventName): boolean
-    {
-        return cast<pc.EventHandler>(this).hasEvent(eventName as string);
+    hasEvent(eventName) {
+        return cast<pc.EventHandler>(this).hasEvent(eventName);
     }
     /**
      * 手动触发事件
-     * @param eventName 事件名称
-     * @param arg1 参数1
-     * @param arg2 参数2
-     * @param arg3 参数3
-     * @param arg4 参数4
-     * @param arg5 参数5
-     * @param arg6 参数6
-     * @param arg7 参数7
-     * @param arg8 参数8
-     * @returns EventHandler
+     * @template {keyof EventsMap} EventName
+     * @param {EventName} eventName 事件名称
+     * @param {any} [arg1] 参数1
+     * @param {any} [arg2] 参数2
+     * @param {any} [arg3] 参数3
+     * @param {any} [arg4] 参数4
+     * @param {any} [arg5] 参数5
+     * @param {any} [arg6] 参数6
+     * @param {any} [arg7] 参数7
+     * @param {any} [arg8] 参数8
+     * @returns {pc.EventHandler} EventHandler
      */
-    protected fire<EventName extends keyof EventsMap>(eventName: EventName, arg1?: any, arg2?: any, arg3?: any, arg4?: any, arg5?: any, arg6?: any, arg7?: any, arg8?: any): pc.EventHandler
+    fire(eventName, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
     {
-        return cast<pc.EventHandler>(this).fire(eventName as string, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        //return cast<pc.EventHandler>(this).fire(eventName as string, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        return this.fire(eventName, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
 
     protected onEnable(): void { };

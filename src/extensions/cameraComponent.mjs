@@ -7,30 +7,36 @@
  */
 
 import * as pc from "playcanvas";
-
-import { MeshInstance_EX } from "@/extensions/meshInstance";
-import { cast, extendClass } from "@/utils/helpers/extend-decorator";
-
+import { MeshInstance_EX } from "../extensions/meshInstance.mjs";
 import { intersect } from "./meshInstance";
 
-@extendClass(pc.CameraComponent)
-export class CameraComponent_EX extends pc.CameraComponent
-{
+export class CameraComponent_EX extends pc.CameraComponent {
     /**
     * 跟随另一个相机（与另一相机的几何信息保持相同）
-    * @param camera 要跟随的相机
+    * @param {pc.CameraComponent} camera 要跟随的相机
+    * @returns {void}
     */
-    follow(camera: pc.CameraComponent): void
-    {
+    follow(camera) {
         const viewMatrix = this.viewMatrix;
         const projectionMatrix = this.projectionMatrix;
-        this.calculateTransform = function (transformMatrix: pc.Mat4, view: number)
+        /**
+         * 
+         * @param {pc.Mat4} transformMatrix 
+         * @param {number} view 
+         * @returns 
+         */
+        this.calculateTransform = function (transformMatrix, view)
         {
             this.horizontalFov = camera.horizontalFov;
             this.fov = camera.fov;
             return viewMatrix;
         }
-        this.calculateProjection = function (transformMatrix: pc.Mat4, view: number)
+        /**
+         * @param {pc.Mat4} transformMatrix 
+         * @param {number} view 
+         * @returns 
+         */
+        this.calculateProjection = function (transformMatrix, view)
         {
             this.horizontalFov = camera.horizontalFov;
             return projectionMatrix;
@@ -39,16 +45,16 @@ export class CameraComponent_EX extends pc.CameraComponent
 
     /**
      * 从此相机发射射线，检测一系列mesh的交点
-     * @param ray 要检测的射线
-     * @param meshInstances 要检测的meshInstance集合
-     * @returns 交点集合
+     * @param {pc.Ray} ray 要检测的射线
+     * @param {MeshInstance_EX[]} meshInstances 要检测的meshInstance集合
+     * @returns {Array<intersect>|null} 交点集合
      */
-    raycastMeshInstances(ray: pc.Ray, meshInstances: Array<pc.MeshInstance>): Array<intersect>
-    {
-        let intersects = new Array<intersect>();
+    raycastMeshInstances(ray, meshInstances) {
+        /** @type {intersect[]} */
+        let intersects = [];
 
         for (let i = 0; i < meshInstances.length; i++) {
-            cast<MeshInstance_EX>(meshInstances[i]).intersectsRay(ray, intersects);
+            meshInstances[i].intersectsRay(ray, intersects);
         }
 
         if (intersects.length === 0) {

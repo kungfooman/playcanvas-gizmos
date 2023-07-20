@@ -3,7 +3,7 @@ import { terser } from "rollup-plugin-terser";
 
 
 export default {
-	input: "src/index.ts",
+	input: "src/index.mjs",
 
 	plugins: [
 		typescript({
@@ -22,7 +22,9 @@ export default {
 		format: "iife",
 		name: "pcEX",
 		extend: false,
-		globals: { "playcanvas": "pc" }
+		globals: {
+			playcanvas: "pc"
+		}
 	},
 
 	external: ["playcanvas"]
