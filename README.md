@@ -11,23 +11,13 @@ npm i playcanvas-gizmos
 // Import all to use extend functions
 import * as pc from "playcanvas";
 import * as pcGizmos from "playcanvas-gizmos";
-
 let rotation = new pc.Quat();
 rotation.setLookRotation(position, target, up);
-
-
-// Import named
+// Use DebugLine
 import { DebugLine } from "playcanvas-gizmos";
-
 DebugLine.drawLine(start, end, color);
-
-
-// use gizmos
-import { use, RuntimeTransformHandle } from "playcanvas-gizmos";
-
-// through use api
-let runtimeTransformHandle = use(RuntimeTransformHandle, { mainCamera: thisCamera });
-// through new instance
+// Use gizmos
+import { RuntimeTransformHandle } from "playcanvas-gizmos";
 let runtimeTransformHandle = new RuntimeTransformHandle({ mainCamera: thisCamera });
 ```
 
@@ -37,23 +27,13 @@ let runtimeTransformHandle = new RuntimeTransformHandle({ mainCamera: thisCamera
 // Import all to use extend functions
 const pc = require("playcanvas");
 const playcanvasGizmos = require("playcanvas-gizmos");
-
 let rotation = new pc.Quat();
 rotation.setLookRotation(position, target, up);
-
-
-// Import named
+// Use DebugLine
 const { DebugLine } = require("playcanvas-gizmos");
-
 DebugLine.drawLine(start, end, color);
-
-
-// use ex tools
-const { use, RuntimeTransformHandle } = require("playcanvas-gizmos");
-
-// through use api
-let runtimeTransformHandle = use(RuntimeTransformHandle, { mainCamera: thisCamera });
-// through new instance
+// Use gizmos
+const { RuntimeTransformHandle } = require("playcanvas-gizmos");
 let runtimeTransformHandle = new RuntimeTransformHandle({ mainCamera: thisCamera });
 ```
 
@@ -62,23 +42,19 @@ let runtimeTransformHandle = new RuntimeTransformHandle({ mainCamera: thisCamera
 Old school method
 
 ```html
-<script src="./bin/playcanvasGizmos.js"></script>
+<script src="./playcanvasGizmos.js"></script>
 <script>
-	
-// use extend functions
-let rotation = new pc.Quat();
-rotation.setLookRotation(position, target, up);
-
-// use new functions
-pc.DebugLine.drawLine(start, end, color);
-
-// use ex tools
-let runtimeTransformHandle = new pc.EXTools.RuntimeTransformHandle({ mainCamera: thisCamera });
-
+  // use extend functions
+  let rotation = new pc.Quat();
+  rotation.setLookRotation(position, target, up);
+  // use new functions
+  pc.DebugLine.drawLine(start, end, color);
+  // use ex tools
+  let runtimeTransformHandle = new pcGizmos.RuntimeTransformHandle({ mainCamera: thisCamera });
 </script>
 ```
 
-For static usage, ambient type definitions can optionally be referenced here `node_modules/playcanvas-gizmos/bin/playcanvasGizmos.d.ts`.
+For static usage, ambient type definitions can optionally be referenced here `node_modules/playcanvas-gizmos/playcanvasGizmos.d.ts`.
 ### API Docs
 
 API docs can be found [here](https://thefbplus.github.io/playcanvas-gizmos/)
