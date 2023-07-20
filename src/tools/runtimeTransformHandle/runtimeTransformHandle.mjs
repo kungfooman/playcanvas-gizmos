@@ -47,7 +47,7 @@ import { MultiSelector } from "../../tools/selector/multiSelector.mjs";
  */
 
 //@tool("RuntimeTransformHandle")
-export class RuntimeTransformHandle {
+export class RuntimeTransformHandle extends pc.EventHandler {
     // 默认选项
     /** @type {RTHOptions} */
 
@@ -222,13 +222,12 @@ export class RuntimeTransformHandle {
      * gizmo = new RuntimeTransformHandle(app);
      * @param {RTHOptions} options 
      */
-    constructor(app, options) {
-
+    constructor(options) {
+        super();
         this.toolOptions = {
             ...this.toolOptionsDefault,
             ...options,
         };
-        //this.app = app;
         //this.setOptions(options);
 
         // 创建handle
@@ -383,10 +382,10 @@ export class RuntimeTransformHandle {
      * @param {HandleType} type 坐标轴类型
      * @returns {void}
      */
-    setHandleType(type)
-    {
-        if (this.isDragging) { return; }
-
+    setHandleType(type) {
+        if (this.isDragging) {
+            return;
+        }
         this.translationHandle.enabled = type == HandleType.Translation;
         this.rotationHandle.enabled = type == HandleType.Rotation;
         this.scaleHandle.enabled = type == HandleType.Scale;

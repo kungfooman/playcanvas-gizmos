@@ -7,6 +7,7 @@ Test:
   gizmo.transformHandle.enabled = true;
   gizmo.orbitCamera.yaw = -60;
   gizmo.orbitCamera.distance = 20;
+  gizmo.select(app.root.children[0]);
 */
 
 // create a PlayCanvas application
