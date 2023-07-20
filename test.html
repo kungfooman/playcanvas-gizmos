@@ -1,3 +1,14 @@
+<body></body>
+<script src="./importmap.js"></script>
 <script type="module">
-    import * as pcGizmo from "./src/index.mjs";
+    //import * as pcGizmos from "./src/index.mjs";
+    //console.log(pcGizmos);
+    import { RuntimeTransformHandle } from "./src/tools/runtimeTransformHandle/runtimeTransformHandle.mjs";
+    Object.assign(window, {
+        // pcGizmos,
+        // ...pcGizmos,
+        RuntimeTransformHandle
+    });
 </script>
+<canvas id='application'></canvas>
+<script type="module" src="./test.mjs"></script>
