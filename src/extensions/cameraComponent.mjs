@@ -1,14 +1,14 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-07 10:19:52
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-27 16:44:13
- * @ 详情: 扩展CameraComponent类
+ * 创建者: FBplus
+ * 创建时间: 2022-06-07 10:19:52
+ * 修改者: FBplus
+ * 修改时间: 2022-07-27 16:44:13
+ * 详情: 扩展CameraComponent类
  */
 
 import * as pc from "playcanvas";
 import { MeshInstance_EX } from "../extensions/meshInstance.mjs";
-import { intersect } from "./meshInstance";
+// import type { intersect } from "./meshInstance.mjs";
 
 export class CameraComponent_EX extends pc.CameraComponent {
     /**

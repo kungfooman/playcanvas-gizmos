@@ -1,19 +1,18 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-07-25 10:05:18
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-29 11:53:08
- * @ 详情: 开关element
+ * 创建者: FBplus
+ * 创建时间: 2022-07-25 10:05:18
+ * 修改者: FBplus
+ * 修改时间: 2022-07-29 11:53:08
+ * 详情: 开关element
  */
 
 import * as pc from "playcanvas";
 
-import { Entity_EX } from "@/extensions/entity";
-import { attr, createScript, ScriptTypeBase } from "@/utils/helpers/create-script-decorator";
-import { castEX } from "@/utils/helpers/extend-decorator";
-import { Toggle } from "@/utils/ui/toggle";
-
-import { Element_ToggleGroup } from "./element_toggleGroup";
+import { Entity_EX } from "../extensions/entity.mjs";
+import { attr, createScript, ScriptTypeBase } from "../../utils/helpers/create-script-decorator.mjs";
+import { castEX } from "../../utils/helpers/extend-decorator.mjs";
+import { Toggle } from "../../utils/ui/toggle.mjs";
+import { Element_ToggleGroup } from "./element_toggleGroup.mjs";
 
 /**
  * 开关UI类

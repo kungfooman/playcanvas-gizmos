@@ -1,12 +1,12 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-07-25 10:08:31
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-28 18:11:47
- * @ 详情: 开关组element
+ * 创建者: FBplus
+ * 创建时间: 2022-07-25 10:08:31
+ * 修改者: FBplus
+ * 修改时间: 2022-07-28 18:11:47
+ * 详情: 开关组element
  */
-import { attr, createScript, ScriptTypeBase } from "@/utils/helpers/create-script-decorator";
-import { ToggleGroup } from "@/utils/ui/toggleGroup";
+import { attr, createScript, ScriptTypeBase } from "../../utils/helpers/create-script-decorator";
+import { ToggleGroup } from "../../utils/ui/toggleGroup";
 
 /**
  * 开关组UI类

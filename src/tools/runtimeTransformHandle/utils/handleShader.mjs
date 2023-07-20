@@ -1,17 +1,18 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-04-22 10:00:25
- * @ 修改者: FBplus
- * @ 修改时间: 2022-08-09 14:12:33
- * @ 详情: runtime transform handle的相关材质
+ * 创建者: FBplus
+ * 创建时间: 2022-04-22 10:00:25
+ * 修改者: FBplus
+ * 修改时间: 2022-08-09 14:12:33
+ * 详情: runtime transform handle的相关材质
  */
 
 import * as pc from "playcanvas";
 
-import { frag } from "@/utils/helpers/shaderHelper";
+import { frag } from "../../../utils/helpers/shaderHelper.mjs";
 
 // 自定义endPS，去除环境光对材质颜色的影响
 export const noAmbientEndPS = frag`
+/* old version:
     dDiffuseLight = vec3(0.0);
 #ifdef CLEARCOAT
     gl_FragColor.rgb = combineColorCC();
@@ -19,6 +20,20 @@ export const noAmbientEndPS = frag`
     gl_FragColor.rgb = combineColor();
 #endif 
     gl_FragColor.rgb += getEmission();
+    gl_FragColor.rgb = addFog(gl_FragColor.rgb);
+#ifndef HDR
+    gl_FragColor.rgb = toneMap(gl_FragColor.rgb);
+    gl_FragColor.rgb = gammaCorrectOutput(gl_FragColor.rgb);
+#endif
+*/
+// new version thank you @yaustar
+dDiffuseLight = vec3(0.0);
+#ifdef CLEARCOAT
+    gl_FragColor.rgb = combineColorCC();
+#else
+    gl_FragColor.rgb = combineColor(litShaderArgs.albedo, litShaderArgs.sheen.specularity, litShaderArgs.clearcoat.specularity);
+#endif 
+    gl_FragColor.rgb += litShaderArgs.emission;
     gl_FragColor.rgb = addFog(gl_FragColor.rgb);
 #ifndef HDR
     gl_FragColor.rgb = toneMap(gl_FragColor.rgb);
@@ -149,5 +164,7 @@ halfTransMat.useSkybox = false;
 halfTransMat.depthTest = false;
 halfTransMat.update();
 
-export { axisXMat, axisYMat, axisZMat, planXMat, planYMat, planZMat, planeEdgeXMat, planeEdgeYMat, planeEdgeZMat, transparentMat, halfTransMat };
-
+export {
+    axisXMat, axisYMat, axisZMat, planXMat, planYMat, planZMat, planeEdgeXMat, planeEdgeYMat,
+    planeEdgeZMat, transparentMat, halfTransMat
+};

@@ -1,48 +1,71 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-05-05 10:56:15
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-10 21:42:04
- * @ 详情: 控制runtime transform的撤销和重做
+ * 创建者: FBplus
+ * 创建时间: 2022-05-05 10:56:15
+ * 修改者: FBplus
+ * 修改时间: 2022-07-10 21:42:04
+ * 详情: 控制runtime transform的撤销和重做
  */
 import * as pc from "playcanvas";
 
-export class Record
-{
-    selections: pc.Entity[] | null;
-    transforms: pc.Mat4[] | null;
+export class Record {
+    /** @type {pc.Entity[] | null} */
+    selections;
+    /** @type {pc.Mat4[] | null} */
+    transforms;
 
-    constructor(selections: pc.Entity[] | null = null, transforms: pc.Mat4[] | null = null)
-    {
+    /**
+     * @param {pc.Entity[] | null} selections 
+     * @param {pc.Mat4[] | null} transforms 
+     */
+    constructor(selections = null, transforms = null) {
         this.selections = selections;
         this.transforms = transforms;
     }
 
-    public equals(record: Record): boolean
-    {
-        if (this.selections === null && record.selections === null) { return true; }
-
-        if (this.selections === null || record.selections === null ||
-            this.selections.length != record.selections.length || this.transforms.length != record.transforms.length) { return false; }
-
+    /**
+     * 
+     * @param {Record} record 
+     * @returns {boolean}
+     */
+    equals(record) {
+        if (this.selections === null && record.selections === null) {
+            return true;
+        }
+        if (
+            this.selections === null ||
+            record.selections === null ||
+            this.selections.length != record.selections.length ||
+            this.transforms.length != record.transforms.length
+        ) {
+            return false;
+        }
         const selectionIsEqual = this.selections?.every((selection, index) => selection === record.selections[index]);
         const transformIsEqual = this.transforms?.every((transform, index) => transform.equals(record.transforms[index]));
 
         return selectionIsEqual && transformIsEqual;
     }
 
-    public set(selections: pc.Entity[] | null, transforms: pc.Mat4[] | null): Record
-    {
+    /**
+     * 
+     * @param {pc.Entity[] | null} selections 
+     * @param {pc.Mat4[] | null} transforms 
+     * @returns {Record}
+     */
+    set(selections, transforms) {
         this.selections = selections;
         this.transforms = transforms;
 
         return this;
     }
 
-    public clone(): Record
-    {
-        let selections: pc.Entity[] | null;
-        let transforms: pc.Mat4[] | null;
+    /**
+     * @returns {Record}
+     */
+    clone() {
+        /** @type {pc.Entity[] | null} */
+        let selections;
+        /** @type {pc.Mat4[] | null} */
+        let transforms;
         if (this.selections === null) {
             selections = null;
         }
@@ -67,35 +90,47 @@ export class Record
 
 export default class Recorder
 {
-    private static records: Record[] = [];
-    private static index: number = 0;
+    /** @type {Record[]} */
+    static records = [];
+    static index = 0;
 
-    public static init(record: Record): void
-    {
+    /**
+     * @param {Record} record 
+     */
+    static init(record) {
         this.records.length = 1;
         this.records[0] = record.clone();
         this.index = 0;
     }
 
-    public static save(record: Record): void
-    {
-        if (this.records[this.index]?.equals(record)) { return; }
-
+    /**
+     * @param {Record} record 
+     */
+    static save(record) {
+        if (this.records[this.index]?.equals(record)) {
+            return;
+        }
         this.records.length = ++this.index;
         this.records.push(record.clone());
     }
 
-    public static undo(): Record
-    {
-        if (--this.index <= 0) { this.index = 0; }
-
+    /**
+     * @returns {Record}
+     */
+    static undo() {
+        if (--this.index <= 0) {
+            this.index = 0;
+        }
         return this.records[this.index];
     }
 
-    public static redo(): Record
-    {
-        if (++this.index > this.records.length - 1) { this.index = this.records.length - 1; }
-
+    /**
+     * @returns {Record}
+     */
+    static redo() {
+        if (++this.index > this.records.length - 1) {
+            this.index = this.records.length - 1;
+        }
         return this.records[this.index];
     }
 }

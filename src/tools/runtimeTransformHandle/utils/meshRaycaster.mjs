@@ -1,53 +1,56 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-05-16 17:14:38
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-10 21:36:54
- * @ 详情: 遍历三角形，检测交点
+ * 创建者: FBplus
+ * 创建时间: 2022-05-16 17:14:38
+ * 修改者: FBplus
+ * 修改时间: 2022-07-10 21:36:54
+ * 详情: 遍历三角形，检测交点
  */
 
 import * as pc from "playcanvas";
 
 // 三角形格式
-interface ITriangle
-{
-    a: pc.Vec3;
-    b: pc.Vec3;
-    c: pc.Vec3;
-}
+/**
+ * @typedef ITriangle
+ * @type {Object}
+ * @property {pc.Vec3} a - Point A of the triangle.
+ * @property {pc.Vec3} b - Point B of the triangle.
+ * @property {pc.Vec3} c - Point C of the triangle.
+ */
 
 // 交点格式
-interface IIntersect
-{
-    distance: number;
-    meshInstance: pc.MeshInstance;
-}
 
-export default class MeshRaycaster
-{
-    private static collisionMeshInstances: pc.MeshInstance[] = [];
-    private static meshTriangleMap: Map<pc.MeshInstance, ITriangle[]> = new Map<pc.MeshInstance, ITriangle[]>();
+/**
+ * @typedef IIntersect
+ * @type {object} 
+ * @property {number} distance 
+ * @property {pc.MeshInstance} meshInstance
+ */
 
-    private static worldRay: pc.Ray = new pc.Ray();
-    private static localRay: pc.Ray = new pc.Ray();
+export default class MeshRaycaster {
+    /** @type {pc.MeshInstance[]} */
+    static collisionMeshInstances = [];
+    /** @type {Map<pc.MeshInstance, ITriangle[]>} */
+    static meshTriangleMap = new Map();
+    static worldRay = new pc.Ray();
+    static localRay = new pc.Ray();
+    /** @type {IIntersect[]} */
+    static intersects = [];
 
-    private static intersects: IIntersect[] = [];
-
-    private static diff: pc.Vec3 = new pc.Vec3();
-    private static edge1: pc.Vec3 = new pc.Vec3();
-    private static edge2: pc.Vec3 = new pc.Vec3();
-    private static normal: pc.Vec3 = new pc.Vec3();
-    private static distance: pc.Vec3 = new pc.Vec3();
-    private static worldCoord: pc.Vec3 = new pc.Vec3();
-    private static worldTransform: pc.Mat4 = new pc.Mat4();
-    private static localTransform: pc.Mat4 = new pc.Mat4();
-    private static intersectPoint: pc.Vec3 = new pc.Vec3();
+    static diff = new pc.Vec3();
+    static edge1 = new pc.Vec3();
+    static edge2 = new pc.Vec3();
+    static normal = new pc.Vec3();
+    static distance = new pc.Vec3();
+    static worldCoord = new pc.Vec3();
+    static worldTransform = new pc.Mat4();
+    static localTransform = new pc.Mat4();
+    static intersectPoint = new pc.Vec3();
 
     /**
      * 添加要检测的网格
-     * @param meshInstance 网格
+     * @param {pc.MeshInstance} meshInstance 网格
      */
-    public static addMeshInstances(meshInstance: pc.MeshInstance)
+    static addMeshInstances(meshInstance)
     {
         if (!this.collisionMeshInstances.includes(meshInstance)) {
             this.collisionMeshInstances.push(meshInstance);
@@ -57,17 +60,20 @@ export default class MeshRaycaster
     /**
      * 因待检测的mesh不会发生变化，故可先将其三角形保存起来
      */
-    public static generateTriangles()
+    static generateTriangles()
     {
         this.meshTriangleMap.clear();
 
-        const positions: Array<number> = [];
-        const indices: Array<number> = [];
+        /** @type {Array<number>} */
+        const positions = [];
+        /** @type {Array<number>} */
+        const indices = [];
 
         this.collisionMeshInstances.forEach(meshInstance =>
         {
             const mesh = meshInstance.mesh;
-            const triangles: Array<ITriangle> = [];
+            /** @type {Array<ITriangle>} */
+            const triangles = [];
 
             mesh.getPositions(positions);
             mesh.getIndices(indices);
@@ -88,12 +94,11 @@ export default class MeshRaycaster
 
     /**
      * 检测网格与射线是否相交
-     * @param camera 当前渲染相机
-     * @param screenPoint 屏幕坐标
-     * @returns 离相机最近的交点的网格
+     * @param {pc.CameraComponent} camera 当前渲染相机
+     * @param {{ x: number, y: number }} screenPoint 屏幕坐标
+     * @returns {pc.MeshInstance} 离相机最近的交点的网格
      */
-    public static rayCast(camera: pc.CameraComponent, screenPoint: { x: number, y: number }): pc.MeshInstance
-    {
+    static rayCast(camera, screenPoint) {
         if (this.meshTriangleMap.size <= 0) { return null; }
 
         camera.screenToWorld(screenPoint.x, screenPoint.y, camera.farClip, this.worldRay.direction);
@@ -111,11 +116,10 @@ export default class MeshRaycaster
 
     /**
      * 遍历网格的三角形，检测相交
-     * @param meshInstance 网格
-     * @param triangles 网格的三角形
+     * @param {pc.MeshInstance} meshInstance 网格
+     * @param {ITriangle[]} triangles 网格的三角形
      */
-    private static intersect(meshInstance: pc.MeshInstance, triangles: ITriangle[]): void
-    {
+    static intersect(meshInstance, triangles) {
         // 未激活时不继续检测
         if (!meshInstance.node.enabled) { return null; }
 
@@ -139,12 +143,11 @@ export default class MeshRaycaster
 
     /**
      * 检测射线与三角形的相交
-     * @param meshInstance 网格
-     * @param triangle 三角形
-     * @returns 交点
+     * @param {pc.MeshInstance} meshInstance 网格
+     * @param {ITriangle} triangle 三角形
+     * @returns {IIntersect} 交点
      */
-    private static checkIntersection(meshInstance: pc.MeshInstance, triangle: ITriangle): IIntersect
-    {
+    static checkIntersection(meshInstance, triangle) {
         const backfaceCulling = (
             meshInstance.material.cull === pc.CULLFACE_BACK ||
             meshInstance.material.cull === pc.CULLFACE_FRONTANDBACK
@@ -164,13 +167,12 @@ export default class MeshRaycaster
 
     /**
      * 检测射线与三角形的相交
-     * @param triangle 三角形
-     * @param backfaceCulling 是否剔除背面 
-     * @param res 交点本地坐标
-     * @returns 交点本地坐标
+     * @param {ITriangle} triangle 三角形
+     * @param {boolean} backfaceCulling 是否剔除背面 
+     * @param {pc.Vec3} res 交点本地坐标
+     * @returns {pc.Vec3} 交点本地坐标
      */
-    private static intersectTriangle(triangle: ITriangle, backfaceCulling: boolean, res: pc.Vec3): pc.Vec3
-    {
+    static intersectTriangle(triangle, backfaceCulling, res) {
         this.edge1.sub2(triangle.b, triangle.a);
         this.edge2.sub2(triangle.c, triangle.a);
         this.normal.cross(this.edge1, this.edge2);

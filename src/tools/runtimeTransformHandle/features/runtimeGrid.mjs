@@ -1,25 +1,22 @@
 import * as pc from "playcanvas";
-
-import { Tool } from "@/utils/helpers/toolBase.mjs";
-import { tool } from "../../utils/helpers/useToolHelper.mjs";
-
-import { noAmbientEndPS } from "../utils/handleShader";
+import { noAmbientEndPS } from "../utils/handleShader.mjs";
 
 /**
  * @typedef {Object} RuntimeGridOptions
  * @property {pc.CameraComponent} mainCamera
- * @property {pc.Vec2} [range]
+ * @property {pc.Vec2} range
  */
 
-@tool("RTH_RuntimeGrid")
-export class RTH_RuntimeGrid extends Tool /*<RuntimeGridOptions, any>*/ {
+//@tool("RTH_RuntimeGrid")
+export class RTH_RuntimeGrid {
     /** @type {pc.Layer} */
     static _layer;
-    static get layer()
-    {
+    static get layer() {
         return this._layer || (this._layer = new pc.Layer({ name: "RTH_Grid" })); // grid layer
     }
-
+    get app() {
+        return pc.Application.getApplication();
+    }
     /**
      * 默认选项
      * @protected
@@ -39,10 +36,11 @@ export class RTH_RuntimeGrid extends Tool /*<RuntimeGridOptions, any>*/ {
     /**
      * @param {RuntimeGridOptions} options 
      */
-    constructor(options)
-    {
-        super();
-
+    constructor(options) {
+        this.toolOptions = {
+            ...this.toolOptionsDefault,
+            ...options,
+        };
         this.setOptions(options);
 
         // 添加layer到场景
@@ -54,14 +52,11 @@ export class RTH_RuntimeGrid extends Tool /*<RuntimeGridOptions, any>*/ {
 
     /**
      * @public
-     * @override
      * 设置RuntimeGrid选项
      * @param {RuntimeGridOptions} options - The RuntimeGrid options.
      * @returns {void}
      */
     setOptions(options) {
-        super.setOptions(options);
-
         const toolOptions = this.toolOptions;
         toolOptions.mainCamera.layers = toolOptions.mainCamera.layers.concat(RTH_RuntimeGrid.layer.id); // 相机添加layer
         this.grid && this.grid.destroy();

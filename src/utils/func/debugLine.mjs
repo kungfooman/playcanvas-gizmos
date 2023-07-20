@@ -1,14 +1,14 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-07 15:36:25
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-10 15:07:46
- * @ 详情: 每帧绘制直线
+ * 创建者: FBplus
+ * 创建时间: 2022-06-07 15:36:25
+ * 修改者: FBplus
+ * 修改时间: 2022-07-10 15:07:46
+ * 详情: 每帧绘制直线
  */
 
 import * as pc from "playcanvas";
 
-import GlobalVariables from "@/utils/common/GlobalVariables";
+import GlobalVariables from "../../utils/common/GlobalVariables.mjs";
 
 let lines = new Array<pc.HandleEventCallback>();
 

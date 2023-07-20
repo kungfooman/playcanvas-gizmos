@@ -1,31 +1,30 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2021-12-01 10:08:17
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-22 10:47:16
- * @ 详情: Runtime Transform Handle
+ * 创建者: FBplus
+ * 创建时间: 2021-12-01 10:08:17
+ * 修改者: FBplus
+ * 修改时间: 2022-07-22 10:47:16
+ * 详情: Runtime Transform Handle
  */
 
 import * as pc from "playcanvas";
-
-import { Tool } from "@/utils/helpers/toolBase";
-import { tool, use } from "@/utils/helpers/useToolHelper";
-
-import { OrbitCamera } from "../camera/orbitCamera";
-import { OutlineCamera } from "../camera/outlineCamera";
-import { HandleType, PivotType } from "./common/enum";
-import { RTH_RuntimeGrid } from "./features/runtimeGrid";
+import { OrbitCamera } from "../camera/orbitCamera.mjs";
+import { OutlineCamera } from "../camera/outlineCamera.mjs";
+import { HandleType, PivotType } from "./common/enum.mjs";
+import { RTH_RuntimeGrid } from "./features/runtimeGrid.mjs";
 import {
     Axis, generateRotatioHandle, generateScaleHandle, generateTranslationHandle, HandleMap,
     RTHLayer, SelectType
-} from "./utils/handleMesh";
+} from "./utils/handleMesh.mjs";
 import {
     axisXMat, axisYMat, axisZMat, halfTransMat, planeEdgeXMat, planeEdgeYMat, planeEdgeZMat,
     planXMat, planYMat, planZMat
-} from "./utils/handleShader";
-import MeshRaycaster from "./utils/meshRaycaster";
-import Recorder, { Record } from "./utils/recorder";
-
+} from "./utils/handleShader.mjs";
+import MeshRaycaster from "./utils/meshRaycaster.mjs";
+import Recorder, { Record } from "./utils/recorder.mjs";
+import { MouseInputer } from "../../tools/input/mouseInput.mjs";
+import { CustomPlane } from './CustomPlane.mjs';
+import { Selector } from "../../tools/selector/selector.mjs";
+import { MultiSelector } from "../../tools/selector/multiSelector.mjs";
 /**
  * @typedef {Object} RTHOptions
  * @property {pc.CameraComponent} mainCamera
@@ -47,11 +46,12 @@ import Recorder, { Record } from "./utils/recorder";
  * @property {(selectedNodes: pc.Entity[]): any} focus
  */
 
-@tool("RuntimeTransformHandle")
-export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
-{
+//@tool("RuntimeTransformHandle")
+export class RuntimeTransformHandle {
     // 默认选项
-    protected toolOptionsDefault: RTHOptions = {
+    /** @type {RTHOptions} */
+
+    toolOptionsDefault = {
         mainCamera: this.app.systems.camera.cameras[0],
         selectTags: null,
         selectNull: true,
@@ -64,77 +64,133 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
         multiSelect: true
     };
 
+    get app() {
+        return pc.Application.getApplication();
+    }
+
     // 物体实例
-    private transformHandle: pc.Entity;
-    private translationHandle: pc.Entity;
-    private rotationHandle: pc.Entity;
-    private scaleHandle: pc.Entity;
-    private planeXEntity: pc.Entity;
-    private planeYEntity: pc.Entity;
-    private planeZEntity: pc.Entity;
-    private planeEdge1XEntity: pc.Entity;
-    private planeEdge2XEntity: pc.Entity;
-    private planeEdge1YEntity: pc.Entity;
-    private planeEdge2YEntity: pc.Entity;
-    private planeEdge1ZEntity: pc.Entity;
-    private planeEdge2ZEntity: pc.Entity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    transformHandle;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    translationHandle;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    rotationHandle;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    scaleHandle;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    planeXEntity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    planeYEntity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    planeZEntity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    planeEdge1XEntity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    planeEdge2XEntity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    planeEdge1YEntity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    planeEdge2YEntity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    planeEdge1ZEntity;
+    /**
+     * @private
+     * @type {pc.Entity}
+     */
+    planeEdge2ZEntity;
 
     // 缓存变量
-    private orbitCamera: OrbitCamera;
-    private outLineCamera: OutlineCamera;
-    private trackEntities: pc.Entity[];
-    private trackTransforms: pc.Mat4[];
-    private centerPos: pc.Vec3;
-    private centerRot: pc.Quat;
-    private centerToCamVec: pc.Vec3;
-    private alignedCenterToCamVec: pc.Vec3;
-    private planeProject: pc.Vec3;
-    private screenVec: pc.Vec3;
-    private screenVec2: pc.Vec2
-    private dragVec: pc.Vec2;
-    private invertTransformMat: pc.Mat4;
-    private viewMat: pc.Mat4;
-    private planeToMove: pc.Plane;
-    private planeToFollow: pc.Plane;
-    private planeIntersectPoint: pc.Vec3;
-    private planesIntersectPoint: pc.Vec3;
-    private planeMoveNormal: pc.Vec3;
-    private planeFollowNormal: pc.Vec3;
-    private planeHitVec: pc.Vec3;
-    private planeOffsetVec: pc.Vec3;
-    private planeOffset: number;
-    private planesOffsetVec: pc.Vec3[];
-    private entitysRotationOffset: pc.Vec3[];
-    private entityRotationOffset: pc.Vec3;
-    private planesOffset: number[];
-    private planeXAngle: number;
-    private planeYAngle: number;
-    private planeZAngle: number;
-    private startRotateVec: pc.Vec3;
-    private startRotateVerticalVec: pc.Vec3;
-    private deltaRotateMat: pc.Mat4;
-    private deltaElr: pc.Vec3;
-    private startScales: pc.Vec3[];
-    private record: Record;
+    /*private*/ /** @type {OrbitCamera} */ orbitCamera;
+    /*private*/ /** @type {OutlineCamera} */ outLineCamera;
+    /*private*/ /** @type {pc.Entity[]} */ trackEntities;
+    /*private*/ /** @type {pc.Mat4[]} */ trackTransforms;
+    /*private*/ /** @type {pc.Vec3} */ centerPos;
+    /*private*/ /** @type {pc.Quat} */ centerRot;
+    /*private*/ /** @type {pc.Vec3} */ centerToCamVec;
+    /*private*/ /** @type {pc.Vec3} */ alignedCenterToCamVec;
+    /*private*/ /** @type {pc.Vec3} */ planeProject;
+    /*private*/ /** @type {pc.Vec3} */ screenVec;
+    /*private*/ /** @type {pc.Vec} */ screenVec22
+    /*private*/ /** @type {pc.Vec2} */ dragVec;
+    /*private*/ /** @type {pc.Mat4} */ invertTransformMat;
+    /*private*/ /** @type {pc.Mat4} */ viewMat;
+    /*private*/ /** @type {pc.Plane} */ planeToMove;
+    /*private*/ /** @type {pc.Plane} */ planeToFollow;
+    /*private*/ /** @type {pc.Vec3} */ planeIntersectPoint;
+    /*private*/ /** @type {pc.Vec3} */ planesIntersectPoint;
+    /*private*/ /** @type {pc.Vec3} */ planeMoveNormal;
+    /*private*/ /** @type {pc.Vec3} */ planeFollowNormal;
+    /*private*/ /** @type {pc.Vec3} */ planeHitVec;
+    /*private*/ /** @type {pc.Vec3} */ planeOffsetVec;
+    /*private*/ /** @type {number} */ planeOffset;
+    /*private*/ /** @type {pc.Vec3[]} */ planesOffsetVec;
+    /*private*/ /** @type {pc.Vec3[]} */ entitysRotationOffset;
+    /*private*/ /** @type {pc.Vec3} */ entityRotationOffset;
+    /*private*/ /** @type {number[]} */ planesOffset;
+    /*private*/ /** @type {number} */ planeXAngle;
+    /*private*/ /** @type {number} */ planeYAngle;
+    /*private*/ /** @type {number} */ planeZAngle;
+    /*private*/ /** @type {pc.Vec3} */ startRotateVec;
+    /*private*/ /** @type {pc.Vec3} */ startRotateVerticalVec;
+    /*private*/ /** @type {pc.Mat4} */ deltaRotateMat;
+    /*private*/ /** @type {pc.Vec3} */ deltaElr;
+    /*private*/ /** @type {pc.Vec3[]} */ startScales;
+    /*private*/ /** @type {Record} */ record;
 
     // 操作变量
-    private basePlaneDistance = 66; // 参考平面的距离，坐标轴模型的大小由其在这个参考平面的大小确定
-    private scaleHandleScaler = 0.0036;
-    private rotateHandleScaler = 0.5;
-    private outLineColor = new pc.Color(1, 102 / 255, 0, 1);
+    /*private*/ basePlaneDistance = 66; // 参考平面的距离，坐标轴模型的大小由其在这个参考平面的大小确定
+    /*private*/ scaleHandleScaler = 0.0036;
+    /*private*/ rotateHandleScaler = 0.5;
+    /*private*/ outLineColor = new pc.Color(1, 102 / 255, 0, 1);
 
     // 控制变量
-    private isDragging: boolean = false;
+    /*private*/ isDragging = false;
 
     // 坐标轴模式
-    private handleType: HandleType = HandleType.Translation;
-    private pivotType: PivotType = PivotType.World;
-    private _selectedType: SelectType;
-    private get selectedType()
+    /*private*/ handleType   /*: HandleType */ = HandleType.Translation;
+    /*private*/ pivotType    /*: PivotType  */ = PivotType.World;
+    /*private*/ _selectedType/*: SelectType */ ;
+    /*private*/ get selectedType()
     {
         return this._selectedType;
     }
-    private set selectedType(value)
+   /* private */set selectedType(value)
     {
         if (this._selectedType === value) { return; }
 
@@ -161,11 +217,19 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
         this._selectedType = value;
     }
 
-    constructor(options: RTHOptions)
-    {
-        super();
+    /**
+     * @example
+     * gizmo = new RuntimeTransformHandle(app);
+     * @param {RTHOptions} options 
+     */
+    constructor(app, options) {
 
-        this.setOptions(options);
+        this.toolOptions = {
+            ...this.toolOptionsDefault,
+            ...options,
+        };
+        //this.app = app;
+        //this.setOptions(options);
 
         // 创建handle
         this.transformHandle = new pc.Entity("transformHandle");
@@ -175,15 +239,15 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
         this.transformHandle.addChild(this.translationHandle);
         this.transformHandle.addChild(this.rotationHandle);
         this.transformHandle.addChild(this.scaleHandle);
-        this.planeXEntity = this.transformHandle.findByName(`plane ${Axis.X.toString()}`) as pc.Entity;
-        this.planeYEntity = this.transformHandle.findByName(`plane ${Axis.Y.toString()}`) as pc.Entity;
-        this.planeZEntity = this.transformHandle.findByName(`plane ${Axis.Z.toString()}`) as pc.Entity;
-        this.planeEdge1XEntity = this.transformHandle.findByName(`edge1 ${Axis.X.toString()}`) as pc.Entity;
-        this.planeEdge2XEntity = this.transformHandle.findByName(`edge2 ${Axis.X.toString()}`) as pc.Entity;
-        this.planeEdge1YEntity = this.transformHandle.findByName(`edge1 ${Axis.Y.toString()}`) as pc.Entity;
-        this.planeEdge2YEntity = this.transformHandle.findByName(`edge2 ${Axis.Y.toString()}`) as pc.Entity;
-        this.planeEdge1ZEntity = this.transformHandle.findByName(`edge1 ${Axis.Z.toString()}`) as pc.Entity;
-        this.planeEdge2ZEntity = this.transformHandle.findByName(`edge2 ${Axis.Z.toString()}`) as pc.Entity;
+        this.planeXEntity      = this.transformHandle.findByName(`plane ${Axis.X.toString()}`) /* as pc.Entity */;
+        this.planeYEntity      = this.transformHandle.findByName(`plane ${Axis.Y.toString()}`) /* as pc.Entity */;
+        this.planeZEntity      = this.transformHandle.findByName(`plane ${Axis.Z.toString()}`) /* as pc.Entity */;
+        this.planeEdge1XEntity = this.transformHandle.findByName(`edge1 ${Axis.X.toString()}`) /* as pc.Entity */;
+        this.planeEdge2XEntity = this.transformHandle.findByName(`edge2 ${Axis.X.toString()}`) /* as pc.Entity */;
+        this.planeEdge1YEntity = this.transformHandle.findByName(`edge1 ${Axis.Y.toString()}`) /* as pc.Entity */;
+        this.planeEdge2YEntity = this.transformHandle.findByName(`edge2 ${Axis.Y.toString()}`) /* as pc.Entity */;
+        this.planeEdge1ZEntity = this.transformHandle.findByName(`edge1 ${Axis.Z.toString()}`) /* as pc.Entity */;
+        this.planeEdge2ZEntity = this.transformHandle.findByName(`edge2 ${Axis.Z.toString()}`) /* as pc.Entity */;
 
         // 初始化数据
         this.centerPos = new pc.Vec3();
@@ -197,8 +261,10 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
         this.invertTransformMat = new pc.Mat4();
         this.viewMat = new pc.Mat4();
         this.record = new Record();
-        this.planeToMove = new pc.Plane();
-        this.planeToFollow = new pc.Plane();
+        //this.planeToMove = new pc.Plane();
+        //this.planeToFollow = new pc.Plane();
+        this.planeToMove = new CustomPlane();
+        this.planeToFollow = new CustomPlane();
         this.planeIntersectPoint = new pc.Vec3();
         this.planesIntersectPoint = new pc.Vec3();
         this.planeOffsetVec = new pc.Vec3();
@@ -226,10 +292,13 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
         const toolOptions = this.toolOptions;
         // 使用描边相机，用于选中模型时的高亮显示
-        this.outLineCamera = use("OutlineCamera", { mainCamra: toolOptions.mainCamera, outlineColor: this.outLineColor });
+        this.outLineCamera = new OutlineCamera({
+            mainCamra: toolOptions.mainCamera,
+            outlineColor: this.outLineColor
+        });
 
         // 使用grid
-        toolOptions.showGrid && use("RTH_RuntimeGrid", { mainCamera: toolOptions.mainCamera });
+        toolOptions.showGrid && new RTH_RuntimeGrid({ mainCamera: toolOptions.mainCamera });
         // // 使用gizmo
         // const gizmo = use(RTH_RuntimeGizmo);
 
@@ -238,25 +307,39 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
         // 监听鼠标
         if (this.app.mouse) {
             // 使用鼠标输入监听器，监听鼠标
-            const mouseInputer = use("MouseInputer");
+            const mouseInputer = new MouseInputer(this.app);
 
             // 使用观测相机，实现基本视角操作
-            this.orbitCamera = use("OrbitCamera", { mainCamra: toolOptions.mainCamera, device: this.app.touch ? "touchScreen" : "mouse", rotateCondition: () => (!toolOptions.multiSelect || this.app.keyboard.isPressed(pc.KEY_ALT)) && !this.isDragging });
+            this.orbitCamera = new OrbitCamera({
+                mainCamra: toolOptions.mainCamera,
+                device: this.app.touch ? "touchScreen" : "mouse",
+                rotateCondition: () => (!toolOptions.multiSelect || this.app.keyboard.isPressed(pc.KEY_ALT)) && !this.isDragging
+            });
 
             // 使用模型点选器，实现模型点击检测
-            const selector = use("Selector", { inputHandler: mouseInputer, pickCamera: toolOptions.mainCamera, excludeLayers: [RTHLayer(), RTH_RuntimeGrid.layer, UILayer], pickNull: toolOptions.selectNull, pickTag: toolOptions.selectTags, pickCondition: toolOptions.selectCondition, pickSame: true });
-            selector.on("select", selectedNode => this.select(selectedNode as pc.Entity), this);
+            const selector = new Selector({
+                inputHandler: mouseInputer,
+                pickCamera: toolOptions.mainCamera,
+                excludeLayers: [RTHLayer(), RTH_RuntimeGrid.layer, UILayer],
+                pickNull: toolOptions.selectNull,
+                pickTag: toolOptions.selectTags,
+                pickCondition: toolOptions.selectCondition,
+                pickSame: true,
+            });
+            selector.on("select", selectedNode => this.select(selectedNode /*as pc.Entity*/), this);
 
             if (toolOptions.multiSelect) {
                 // 模型多选器
-                const multiSelector = use("MultiSelector", {
-                    inputHandler: mouseInputer, pickCamera: toolOptions.mainCamera, excludeLayers: [RTHLayer(), RTH_RuntimeGrid.layer, UILayer],
+                const multiSelector = new MultiSelector({
+                    inputHandler: mouseInputer,
+                    pickCamera: toolOptions.mainCamera,
+                    excludeLayers: [RTHLayer(), RTH_RuntimeGrid.layer, UILayer],
                     expectCondition: () => this.isDragging ||
                         this.orbitCamera.isRotating ||
                         this.orbitCamera.isPaning ||
                         this.orbitCamera.isLooking
                 });
-                multiSelector.on("selecting", selectedNodes => this.select(selectedNodes as pc.Entity[]), this);
+                multiSelector.on("selecting", selectedNodes => this.select(selectedNodes /*as pc.Entity[]*/), this);
             }
 
             // 监听鼠标事件
@@ -297,9 +380,10 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 设置坐标轴类型
-     * @param type 坐标轴类型
+     * @param {HandleType} type 坐标轴类型
+     * @returns {void}
      */
-    public setHandleType(type: HandleType): void
+    setHandleType(type)
     {
         if (this.isDragging) { return; }
 
@@ -311,21 +395,22 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 设置中心点类型
-     * @param type 中心点类型
+     * @param {PivotType} type 中心点类型
+     * @returns {void}
      */
-    public setPivotType(type: PivotType): void
+    setPivotType(type)
     {
         this.pivotType = type;
     }
 
     /**
      * 选中模型
-     * @param target 选中的单个模型或模型数组（传入null时则取消选中）
-     * @param saveRecord 是否保存记录
+     * @todo 考虑选中物体的层级影响
+     * @param {pc.Entity | pc.Entity[]} target 选中的单个模型或模型数组（传入null时则取消选中）
+     * @param {boolean} saveRecord 是否保存记录
+     * @returns {void}
      */
-    // TODO:考虑选中物体的层级影响
-    public select(target: pc.Entity | pc.Entity[], saveRecord: boolean = false): void
-    {
+    select(target, saveRecord = false) {
         // 判断两次选择是否完全相同
         if (this.selectionIsEqual(target)) { return; }
 
@@ -353,8 +438,9 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 聚焦选中物体 
+     * @returns {void}
      */
-    public focus(): void
+    focus()
     {
         if (this.isDragging) { return; }
         if (this.trackEntities.length > 0) {
@@ -365,9 +451,10 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 切换轴心模式
+     * @param {PivotType} [pivot]
+     * @returns {void}
      */
-    public switchPivot(pivot?: PivotType): void
-    {
+    switchPivot(pivot) {
         if (this.isDragging) { return; }
 
         if (pivot) {
@@ -385,9 +472,9 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 撤销
+     * @returns {void}
      */
-    public undo(): void
-    {
+    undo() {
         if (this.isDragging || !this.toolOptions.enableUndoRedo) { return; }
         const preRecord = Recorder.undo();
         this.resetTransforms(preRecord.selections, preRecord.transforms);
@@ -395,9 +482,9 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 重做
+     * @returns {void}
      */
-    public redo(): void
-    {
+    redo() {
         if (this.isDragging || !this.toolOptions.enableUndoRedo) { return; }
         const nextRecord = Recorder.redo();
         this.resetTransforms(nextRecord.selections, nextRecord.transforms);
@@ -405,19 +492,20 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 相机看向目标
-     * @param target 目标物体
+     * @param {pc.Entity | pc.Entity[]} target 目标物体
+     * @returns {void}
      */
-    public look(target: pc.Entity | pc.Entity[]): void
-    {
+    look(target) {
         this.orbitCamera.focus(target);
     }
 
     /**
      * 判断本次选择是否和上次相同
-     * @param target 选中的单个模型或模型数组
+     * @private
+     * @param {pc.Entity | pc.Entity[]} target 选中的单个模型或模型数组
+     * @returns {boolean}
      */
-    private selectionIsEqual(target: pc.Entity | pc.Entity[]): boolean
-    {
+    selectionIsEqual(target) {
         if (target == null && this.trackEntities.length <= 0) { return true; }
 
         if (!Array.isArray(target)) {
@@ -429,10 +517,11 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 帧更新
-     * @param dt 本帧的时长
+     * @private
+     * @param {number} dt 本帧的时长
+     * @returns {void}
      */
-    private update(dt: number): void
-    {
+    update(dt) {
         // 没有选中模型时不更新
         if (this.trackEntities.length <= 0) { return; }
 
@@ -444,9 +533,9 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 根据选中的物体，更新坐标轴的几何状态
-     * @param camera 当前渲染相机
+     * @param {pc.CameraComponent} camera 当前渲染相机
      */
-    private updateTransform(camera: pc.CameraComponent): void
+   /* private */updateTransform(camera) /*: void*/
     {
         if (this.trackEntities.length <= 0) { return; }
 
@@ -490,10 +579,10 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 根据相机的角度，更新坐标轴的显示状态
-     * @param camera 当前渲染相机
+     * @param {pc.CameraComponent} camera 当前渲染相机
      */
     // TODO:优化材质更新逻辑，不需要每帧都更新；检查并删除多余的运算
-    private updateDisplay(camera: pc.CameraComponent): void
+   /* private */updateDisplay(camera) /*: void*/
     {
         if (this.trackEntities.length <= 0) { return; }
 
@@ -729,9 +818,9 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 根据鼠标的位置，更新坐标轴的选中状态
-     * @param camera 当前渲染相机
+     * @param {pc.CameraComponent} camera 当前渲染相机
      */
-    private updateHandle(camera: pc.CameraComponent)
+   /* private */updateHandle(camera)
     {
         if (this.isDragging || this.trackEntities.length <= 0) { return; }
 
@@ -739,7 +828,7 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
         const resMI = MeshRaycaster.rayCast(camera, { x: mouse._lastX, y: mouse._lastY });
 
         if (resMI) {
-            var selectType = HandleMap[(resMI.node as any)._guid];
+            var selectType = HandleMap[(resMI.node /*as any*/)._guid];
             this.selectedType = selectType;
         }
         else {
@@ -749,13 +838,13 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 根据鼠标移动对选中物体进行位移
-     * @param currentCamera 当前渲染相机
-     * @param x 鼠标x
-     * @param y 鼠标y
+     * @param {pc.CameraComponent} currentCamera 当前渲染相机
+     * @param {number} x 鼠标x
+     * @param {number} y 鼠标y
+     * @returns {void}
      */
     // TODO:找到更好的算法，避免重复多余的运算
-    private onTranslationHandleMove(currentCamera: pc.CameraComponent, x: number, y: number): void
-    {
+   /* private */onTranslationHandleMove(currentCamera, x, y) {
         if (this.trackEntities.length <= 0) { return; }
 
         const handlePos = this.transformHandle.getPosition();
@@ -802,12 +891,11 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 根据鼠标移动对选中物体进行旋转
-     * @param currentCamera 当前渲染相机
-     * @param dx 鼠标x增量
-     * @param dy 鼠标y增量
+     * @param {pc.CameraComponent} currentCamera 当前渲染相机
+     * @param {number} dx 鼠标x增量
+     * @param {number} dy 鼠标y增量
      */
-    private onRotationHandleMove(currentCamera: pc.CameraComponent, dx: number, dy: number)
-    {
+   /* private */onRotationHandleMove(currentCamera, dx, dy) {
         if (this.trackEntities.length <= 0) { return; }
 
         this.screenVec.copy(this.startRotateVerticalVec);
@@ -839,12 +927,13 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 根据鼠标移动对选中物体进行放缩
-     * @param currentCamera 当前渲染相机
-     * @param dx 鼠标x增量
-     * @param dy 鼠标y增量
+     * @param {pc.CameraComponent} currentCamera 当前渲染相机
+     * @param {number} dx 鼠标x增量
+     * @param {number} dy 鼠标y增量
+     * 
      */
     // TODO:处理尺寸为负的情况；实现缩放时handle长度跟着变化
-    private onScaleHandleMove(currentCamera: pc.CameraComponent, dx: number, dy: number): void
+   /* private */onScaleHandleMove(currentCamera, dx, dy) /*: void*/
     {
         if (this.trackEntities.length <= 0) { return; }
 
@@ -888,10 +977,10 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 根据记录还原模型的空间信息
-     * @param selections 选中模型
-     * @param transforms 选中模型的空间信息
+     * @param {pc.Entity[] | null} selections 选中模型
+     * @param {pc.Mat4[] | null} transforms 选中模型的空间信息
      */
-    private resetTransforms(selections: pc.Entity[] | null, transforms: pc.Mat4[] | null): void
+   /* private */resetTransforms(selections, transforms) /*: void*/
     {
         this.select(selections);
 
@@ -908,9 +997,9 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 鼠标或触屏按下时触发的事件
-     * @param event 事件
+     * @param {{ x: number, y: number }} event 事件
      */
-    private onControlDown(event: { x: number, y: number }): void
+   /* private */onControlDown(event) /*: void*/
     {
         if (this.selectedType == null) { return; }
 
@@ -1029,9 +1118,9 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 鼠标或触屏移动时触发的事件
-     * @param event 事件
+     * @param {{ x: number, y: number, dx: number, dy: number }} event 事件
      */
-    private onControlMove(event: { x: number, y: number, dx: number, dy: number }): void
+   /* private */onControlMove(event) /*: void*/
     {
         if (!this.isDragging || this.trackEntities.length <= 0) { return; }
 
@@ -1049,10 +1138,10 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
 
     /**
      * 鼠标或触屏按键抬起时触发的事件
-     * @param event 事件
+     * @param {{ x: number, y: number }} event 事件
      */
     // TODO:保存空间信息记录时还要考虑选中物体的层级发生变化的情况
-    private onControlUp(event: { x: number, y: number }): void
+   /* private */onControlUp(event) /*: void*/
     {
         this.updateRecord();
 
@@ -1065,7 +1154,7 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
     }
 
     // 更新记录数据
-    private updateRecord(): void
+   /* private */updateRecord() /*: void*/
     {
         if (!this.toolOptions.enableUndoRedo) { return; }
 
@@ -1080,7 +1169,7 @@ export class RuntimeTransformHandle extends Tool<RTHOptions, RTHEventsMap>
         Recorder.save(this.record);
     }
 
-    protected override onEnable(): void { }
+    /*protected override*/ onEnable() /*: void*/ { }
 
-    protected override onDisable(): void { }
+    /*protected override*/ onDisable() /*: void*/ { }
 }

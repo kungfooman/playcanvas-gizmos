@@ -1,9 +1,9 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-04-21 16:10:55
- * @ 修改者: FBplus
- * @ 修改时间: 2022-09-06 16:05:36
- * @ 详情: 用于扩展pc类的装饰器
+ * 创建者: FBplus
+ * 创建时间: 2022-04-21 16:10:55
+ * 修改者: FBplus
+ * 修改时间: 2022-09-06 16:05:36
+ * 详情: 用于扩展pc类的装饰器
  */
 
 //import { Constructable, Constructor } from "../common/TypesAndInterfaces";

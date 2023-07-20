@@ -1,47 +1,47 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-08 15:04:27
- * @ 修改者: FBplus
- * @ 修改时间: 2022-08-09 16:48:24
- * @ 详情: 点选模型
+ * 创建者: FBplus
+ * 创建时间: 2022-06-08 15:04:27
+ * 修改者: FBplus
+ * 修改时间: 2022-08-09 16:48:24
+ * 详情: 点选模型
  */
 
 import * as pc from "playcanvas";
 
-import { InputEventsMap } from "@/utils/common/InputEventsMap";
-import { Tool } from "@/utils/helpers/toolBase";
-import { tool, use } from "@/utils/helpers/useToolHelper";
+// import type { InputEventsMap } from "../utils/common/InputEventsMap";
 
 /**
  * 模型点选事件-回调表
  */
-interface SelectorEventsMap
-{
-    select: (selectedNode: pc.GraphNode, preSelectedNode: pc.GraphNode) => any;
-};
+
+/**
+ * @typedef {Object} SelectorEventsMap
+ * @property {(selectedNode: pc.GraphNode, preSelectedNode: pc.GraphNode) => any} select
+ */
 
 /**
  * 模型点选选项
  */
-export interface SelectorOptions
-{
-    inputHandler?: Tool<any, InputEventsMap>;
-    pickCamera?: pc.CameraComponent;
-    pickAreaScale?: number;
-    pickTag?: string;
-    pickNull?: boolean;
-    pickSame?: boolean;
-    downSelect?: boolean;
-    pickCondition?: () => boolean;
-    excludeLayers?: pc.Layer[];
-};
+/**
+ * @typedef {object} SelectorOptions
+ * @property {Tool<any, InputEventsMap>} [inputHandler]
+ * @property {pc.CameraComponent} [pickCamera]
+ * @property {number} [pickAreaScale]
+ * @property {string} [pickTag]
+ * @property {boolean} [pickNull]
+ * @property {boolean} [pickSame]
+ * @property {boolean} [downSelect]
+ * @property {function} [pickCondition]
+ * @property {pc.Layer[]} [excludeLayers]
+ */
 
-@tool("Selector")
-export class Selector extends Tool<SelectorOptions, SelectorEventsMap>
+//@tool("Selector")
+export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions, SelectorEventsMap>*/
 {
     // 默认选项
-    protected toolOptionsDefault: SelectorOptions = {
-        inputHandler: this.app.touch ? use("TouchInputer") : use("MouseInputer"),
+    /** @type {SelectorOptions} */
+    toolOptionsDefault = {
+        //inputHandler: this.app.touch ? use("TouchInputer") : use("MouseInputer"),
         pickCamera: this.app.systems.camera.cameras[0],
         pickAreaScale: 0.25,
         pickTag: null,
@@ -51,18 +51,36 @@ export class Selector extends Tool<SelectorOptions, SelectorEventsMap>
         pickCondition: null,
         excludeLayers: null,
     };
-
-    private picker: pc.Picker;
-    private pickLayers: pc.Layer[];
-    private preSelectedNode: pc.GraphNode;
+    get app() {
+        return pc.Application.getApplication();
+    }
+    /**
+     * @private
+     * @type {pc.Picker}
+     */
+    picker;
+    /**
+     * @private
+     * @type {pc.Layer[]}
+     */
+    pickLayers;
+    /**
+     * @private
+     * @type {pc.GraphNode}
+     */
+    preSelectedNode;
 
     /**
      * 创建模型点选器
-     * @param option 模型点选设置
+     * @param {SelectorOptions} options 模型点选设置
      */
-    constructor(options: SelectorOptions)
+    constructor(options)
     {
         super();
+        this.toolOptions = {
+            ...this.toolOptionsDefault,
+            ...options,
+        };
 
         this.picker = new pc.Picker(this.app, 0, 0);
         this.setOptions(options);
@@ -70,28 +88,28 @@ export class Selector extends Tool<SelectorOptions, SelectorEventsMap>
 
     /**
      * 设置模型点选器
-     * @param option 模型点选设置
+     * @override
+     * @param {SelectorOptions} option 模型点选设置
      */
-    public override setOptions(options: SelectorOptions): void
+    setOptions(options)
     {
-        super.setOptions(options);
         // this.toolOptions.inputHandler = this.toolOptions.inputHandler || use("MouseInputer");
         this.pickLayers = this.toolOptions.excludeLayers
-            ? this.app.scene.layers.layerList.filter((layer: pc.Layer) => !this.toolOptions.excludeLayers.includes(layer))
+            ? this.app.scene.layers.layerList.filter((layer/*: pc.Layer*/) => !this.toolOptions.excludeLayers.includes(layer))
             : this.app.scene.layers.layerList;
     }
 
     /**
      * 点选模型
-     * @param event 输入事件
-     * @param event.x 输入事件屏幕x坐标 
-     * @param event.y 输入事件屏幕y坐标  
+     * @param {object} event 输入事件
+     * @param {number} event.x 输入事件屏幕x坐标 
+     * @param {number} event.y 输入事件屏幕y坐标  
      */
-    private pick(event: { x: number, y: number }): void
-    {
+    pick(event) {
         const options = this.toolOptions;
-        if (options.pickCondition && !options.pickCondition()) { return; }
-
+        if (options.pickCondition && !options.pickCondition()) {
+            return;
+        }
         const canvas = this.app.graphicsDevice.canvas;
         const canvasWidth = canvas.clientWidth;
         const canvasHeight = canvas.clientHeight;
@@ -121,21 +139,19 @@ export class Selector extends Tool<SelectorOptions, SelectorEventsMap>
 
     /**
      * 从下至上找到含有某个标签的模型对象
-     * @param model 模型
-     * @param tag 标签
-     * @returns 包含标签的模型对象
+     * @param {pc.GraphNode} model 模型
+     * @param {string} tag 标签
+     * @returns {pc.Entity} 包含标签的模型对象
      */
-    private getModelHasTag(model: pc.GraphNode, tag: string): pc.Entity
-    {
+    getModelHasTag(model, tag) {
         let node = model;
         while (node && !node.tags.has(tag)) {
             node = node.parent;
         }
-        return node as pc.Entity;
+        return node;
     }
 
-    protected override onEnable(): void
-    {
+    onEnable() {
         if (this.toolOptions.downSelect) {
             this.toolOptions.inputHandler.on("down", this.pick, this);
         }
@@ -144,8 +160,7 @@ export class Selector extends Tool<SelectorOptions, SelectorEventsMap>
         }
     }
 
-    protected override onDisable(): void
-    {
+    onDisable() {
         this.toolOptions.inputHandler.off("down", this.pick, this);
         this.toolOptions.inputHandler.off("click", this.pick, this);
     }

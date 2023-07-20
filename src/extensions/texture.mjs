@@ -1,14 +1,12 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-07 14:14:05
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-21 16:48:54
- * @ 详情: 扩展texture类
+ * 创建者: FBplus
+ * 创建时间: 2022-06-07 14:14:05
+ * 修改者: FBplus
+ * 修改时间: 2022-07-21 16:48:54
+ * 详情: 扩展texture类
  */
 
 import * as pc from "playcanvas";
-
-import { extendClass } from "@/utils/helpers/extend-decorator";
 
 /**
  * 把像素数据沿y方向翻转
@@ -31,15 +29,14 @@ function flipY(data: Uint8ClampedArray, width: number, height: number): void
     }
 }
 
-@extendClass(pc.Texture)
-export class Texture_EX extends pc.Texture
-{
-    private _pixelData: Uint8ClampedArray;
+export class Texture_EX extends pc.Texture {
+    /** @type {Uint8ClampedArray} */
+    _pixelData;
     /**
      * 该贴图的像素数据
+     * @type {Uint8ClampedArray}
      */
-    get pixelData(): Uint8ClampedArray
-    {
+    get pixelData() {
         this._pixelData = this._pixelData ?? this.getPixelData();
         return this._pixelData;
     }

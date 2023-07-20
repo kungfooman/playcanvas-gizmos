@@ -1,47 +1,48 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-05-16 14:40:16
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-22 10:49:42
- * @ 详情: 键盘快捷键
+ * 创建者: FBplus
+ * 创建时间: 2022-05-16 14:40:16
+ * 修改者: FBplus
+ * 修改时间: 2022-07-22 10:49:42
+ * 详情: 键盘快捷键
  */
 
 import * as pc from "playcanvas";
 
-import { Tool } from "@/utils/helpers/toolBase";
-import { tool } from "@/utils/helpers/useToolHelper";
+import { HandleType } from "../common/enum.mjs";
 
-import { HandleType } from "../common/enum";
+/**
+ * @typedef {number} KeyCode
+ */
 
-type KeyCode = number;
 /**
  * 键盘快捷键选项
  */
-export interface KeyboardInputOptions
-{
-    translateKey: KeyCode;
-    rotateKey: KeyCode;
-    scaleKey: KeyCode;
-    focusKey: KeyCode;
-    pivotKey: KeyCode;
-    comboKey: KeyCode;
-    undoKey: KeyCode;
-    redoKey: KeyCode;
-};
+/**
+ * An object with keycode's mapped to respective functions.
+ * @typedef {object} KeyboardInputOptions
+ * @property {KeyCode} translateKey - keycode for the translate function
+ * @property {KeyCode} rotateKey - keycode for the rotate function
+ * @property {KeyCode} scaleKey - keycode for the scale function
+ * @property {KeyCode} focusKey - keycode for the focus function
+ * @property {KeyCode} pivotKey - keycode for the pivot function
+ * @property {KeyCode} comboKey - keycode for the combo function
+ * @property {KeyCode} undoKey - keycode for the undo function
+ * @property {KeyCode} redoKey - keycode for the redo function
+ */
 
 /**
  * 键盘快捷键-回调表
  */
-interface ShortcutEventsMap
-{
-    setHandleType: (handleType: HandleType) => any;
-    focus: () => any;
-    switchPivot: () => any;
-    undo: () => any;
-    redo: () => any;
-}
+/**
+ * @typedef {Object} ShortcutEventsMap
+ * @property {(handleType: HandleType) => any} setHandleType - Sets the handle type
+ * @property {() => any} focus - Focuses the element
+ * @property {() => any} switchPivot - Switches the pivot
+ * @property {() => any} undo - Undoes the action
+ * @property {() => any} redo - Redoes the action
+ */
 
-@tool("RTH_KeyboardInputer")
+//@tool("RTH_KeyboardInputer")
 export class RTH_KeyboardInputer extends Tool<KeyboardInputOptions, ShortcutEventsMap>
 {
     // 默认选项

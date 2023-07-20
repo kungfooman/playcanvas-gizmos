@@ -1,15 +1,15 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-07 14:55:21
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-27 11:07:15
- * @ 详情: 扩展Entity类
+ * 创建者: FBplus
+ * 创建时间: 2022-06-07 14:55:21
+ * 修改者: FBplus
+ * 修改时间: 2022-07-27 11:07:15
+ * 详情: 扩展Entity类
  */
 
 import * as pc from "playcanvas";
 
-import { ScriptTypeBase } from "@/utils/helpers/create-script-decorator";
-import { extendClass } from "@/utils/helpers/extend-decorator";
+import { ScriptTypeBase } from "../../utils/helpers/create-script-decorator.mjs";
+import { extendClass } from "../../utils/helpers/extend-decorator.mjs";
 
 const _parentMat = new pc.Mat4();
 

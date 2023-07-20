@@ -1,18 +1,15 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-20 10:49:14
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-22 10:44:59
- * @ 详情: 拖拽gltf到窗口加载模型
+ * 创建者: FBplus
+ * 创建时间: 2022-06-20 10:49:14
+ * 修改者: FBplus
+ * 修改时间: 2022-07-22 10:44:59
+ * 详情: 拖拽gltf到窗口加载模型
  */
 
 import * as pc from "playcanvas";
-
-import GlobalVariables from "@/utils/common/GlobalVariables";
-import { Tool } from "@/utils/helpers/toolBase";
-import { tool } from "@/utils/helpers/useToolHelper";
-
-import * as MeshoptDecoder from "../../utils/libs/meshopt_decoder";
+import GlobalVariables from "../../utils/common/GlobalVariables.mjs";
+import { Tool } from "../../utils/helpers/toolBase.mjs";
+import * as MeshoptDecoder from "../../utils/libs/meshopt_decoder.mjs";
 
 // 文件类型
 interface File
@@ -32,7 +29,7 @@ interface DropGLTFLoaderEventsMap
 {
     modelLoaded: (entity: pc.Entity) => any
 }
-@tool("DropGLTFLoader")
+//@tool("DropGLTFLoader")
 export class DropGLTFLoader extends Tool<any, DropGLTFLoaderEventsMap>
 {
     private dropHandler: DropHandler;

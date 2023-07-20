@@ -1,13 +1,13 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-07-25 10:05:18
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-27 16:49:07
- * @ 详情: 开关逻辑
+ * 创建者: FBplus
+ * 创建时间: 2022-07-25 10:05:18
+ * 修改者: FBplus
+ * 修改时间: 2022-07-27 16:49:07
+ * 详情: 开关逻辑
  */
 import * as pc from "playcanvas";
 
-import { ToggleGroup } from "./toggleGroup";
+import { ToggleGroup } from "./toggleGroup.mjs";
 
 /**
  * 开关逻辑类

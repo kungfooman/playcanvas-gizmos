@@ -1,37 +1,36 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-05-16 09:46:02
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-10 15:09:10
- * @ 详情: 在屏幕空间绘制方片
+ * 创建者: FBplus
+ * 创建时间: 2022-05-16 09:46:02
+ * 修改者: FBplus
+ * 修改时间: 2022-07-10 15:09:10
+ * 详情: 在屏幕空间绘制方片
  */
 
 import * as pc from "playcanvas";
 
-import { Color_EX } from "@/extensions/color";
-import GlobalVariables from "@/utils/common/GlobalVariables";
-import { cast } from "@/utils/helpers/extend-decorator";
-import fs from "@/utils/shaders/screenQuad/ScreenQuadPS.frag";
-import vs from "@/utils/shaders/screenQuad/ScreenQuadVS.vert";
+// import type { Color_EX } from "../extensions/color.mjs";
+
+//import fs from "../../utils/shaders/screenQuad/ScreenQuadPS.frag";
+//import vs from "../../utils/shaders/screenQuad/ScreenQuadVS.vert";
 
 const defaultRect = new pc.Vec4(0, 0, 1, 1);
 const defaultColor = pc.Color.WHITE.clone();
 
-let quadShader: pc.Shader;
-let quadMesh: pc.Mesh;
-let quadColor: pc.Color;
-let quadMaterial: pc.Material;
-let quadEntity: pc.Entity;
-let quadLayer: pc.Layer;
-let screenRect: pc.Vec4;
+/** @type {pc.Shader} */ let quadShader;
+/** @type {pc.Mesh} */ let quadMesh;
+/** @type {pc.Color} */ let quadColor;
+/** @type {pc.Material} */ let quadMaterial;
+/** @type {pc.Entity} */ let quadEntity;
+/** @type {pc.Layer} */ let quadLayer;
+/** @type {pc.Vec4} */ let screenRect;
 
 /**
  * 绘制框选矩形内部
- * @param rect 矩形范围
- * @param color 颜色
- * @param layer layer
+ * @param {pc.Vec4} rect 矩形范围
+ * @param {pc.Color} color 颜色
+ * @param {pc.Layer} [layer] layer
  */
-export function drawScreenQuad(rect = defaultRect, color = defaultColor, layer?: pc.Layer): void
+export function drawScreenQuad(rect = defaultRect, color = defaultColor, layer)
 {
     quadEntity ?? createQuadEntity(rect, color);
     quadEntity.enabled = true;
@@ -42,7 +41,7 @@ export function drawScreenQuad(rect = defaultRect, color = defaultColor, layer?:
     }
 
     if (!quadColor.equals(color)) {
-        quadMaterial.setParameter("uColor", cast<Color_EX>(color).shaderData);
+        quadMaterial.setParameter("uColor", color.shaderData);
         quadMaterial.update();
         quadColor.copy(color);
     }
@@ -56,7 +55,7 @@ export function drawScreenQuad(rect = defaultRect, color = defaultColor, layer?:
 /**
  * 清除框选矩形内部
  */
-export function clearScreenQuad(): void
+export function clearScreenQuad()
 {
     if (quadEntity) {
         quadEntity.enabled = false;
@@ -65,13 +64,12 @@ export function clearScreenQuad(): void
 
 /**
  * 创建框选矩形内部物体实例
- * @param rect 矩形范围
- * @param color 颜色
- * @param layer layer
- * @returns 框选矩形内部物体实例
+ * @param {pc.Vec4} rect 矩形范围
+ * @param {pc.Color} color 颜色
+ * @param {pc.Layer} [layer] layer
+ * @returns {pc.Entity} 框选矩形内部物体实例
  */
-function createQuadEntity(rect: pc.Vec4, color: pc.Color, layer?: pc.Layer): pc.Entity
-{
+function createQuadEntity(rect, color, layer) {
     screenRect = new pc.Vec4().copy(rect);
     quadMesh = updateQuadMesh(screenRect);
 
@@ -80,7 +78,7 @@ function createQuadEntity(rect: pc.Vec4, color: pc.Color, layer?: pc.Layer): pc.
     quadMaterial = new pc.Material();
     quadMaterial.shader = quadShader;
     quadMaterial.blendType = pc.BLEND_NORMAL;
-    quadMaterial.setParameter("uColor", cast<Color_EX>(quadColor).shaderData);
+    quadMaterial.setParameter("uColor", quadColor.shaderData);
     quadMaterial.update();
 
     const meshInstance = new pc.MeshInstance(quadMesh, quadMaterial);
@@ -97,17 +95,17 @@ function createQuadEntity(rect: pc.Vec4, color: pc.Color, layer?: pc.Layer): pc.
         entity.render.layers = [quadLayer.id];
     }
 
-    GlobalVariables.app.root.addChild(entity);
+    const app = pc.Application.getApplication();
+    app.root.addChild(entity);
 
     return entity;
 }
 
 /**
  * 创建shader
- * @returns shader
+ * @returns {pc.Shader} shader
  */
-function createQuadShader(): pc.Shader
-{
+function createQuadShader() {
     // shander定义
     const shaderDefinition = {
         attributes: {
@@ -117,29 +115,31 @@ function createQuadShader(): pc.Shader
         fshader: fs
     };
 
-    quadShader = new pc.Shader(GlobalVariables.app.graphicsDevice, shaderDefinition);
+    const app = pc.Application.getApplication();
+    quadShader = new pc.Shader(app.graphicsDevice, shaderDefinition);
 
     return quadShader;
 }
 
 /**
  * 更新框选矩形内部mesh
- * @param rect 矩形范围
- * @returns 更新后的mesh
+ * @param {pc.Vec4} rect 矩形范围
+ * @returns {pc.Mesh} 更新后的mesh
  */
-function updateQuadMesh(rect: pc.Vec4 = new pc.Vec4(0, 0, 1, 1)): pc.Mesh
-{
+function updateQuadMesh(rect = new pc.Vec4(0, 0, 1, 1)) {
     const positions = [
         rect.x * 2 - 1, 1 - 2 * rect.y, 0,
         (rect.x + rect.z) * 2 - 1, 1 - 2 * rect.y, 0,
         (rect.x + rect.z) * 2 - 1, 1 - 2 * (rect.y + rect.w), 0,
         rect.x * 2 - 1, 1 - 2 * (rect.y + rect.w), 0
     ];
-    const indices = new Array<number>(1, 0, 3, 3, 2, 1);
+    /** @type {number[]} */
+    const indices = new Array(1, 0, 3, 3, 2, 1);
     const normals = pc.calculateNormals(positions, indices);
 
     if (!quadMesh) {
-        quadMesh = new pc.Mesh(GlobalVariables.app.graphicsDevice);
+        const app = pc.Application.getApplication();
+        quadMesh = new pc.Mesh(app.graphicsDevice);
         quadMesh.clear(true, false);
     }
 

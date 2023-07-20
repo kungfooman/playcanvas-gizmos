@@ -1,38 +1,33 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-05-16 13:41:42
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-10 15:09:41
- * @ 详情: 在屏幕空间绘制矩形
+ * 创建者: FBplus
+ * 创建时间: 2022-05-16 13:41:42
+ * 修改者: FBplus
+ * 修改时间: 2022-07-10 15:09:41
+ * 详情: 在屏幕空间绘制矩形
  */
 
 import * as pc from "playcanvas";
-
-import { Color_EX } from "@/extensions/color";
-import GlobalVariables from "@/utils/common/GlobalVariables";
-import { cast } from "@/utils/helpers/extend-decorator";
-import fs from "@/utils/shaders/screenQuad/ScreenQuadPS.frag";
-import vs from "@/utils/shaders/screenQuad/ScreenQuadVS.vert";
+import fs from "../../../utils/shaders/screenQuad/ScreenQuadPS.frag.mjs";
+import vs from "../../../utils/shaders/screenQuad/ScreenQuadVS.vert.mjs";
 
 const defaultRect = new pc.Vec4(0, 0, 1, 1);
 const defaultColor = pc.Color.WHITE.clone();
 
-let rectShader: pc.Shader;
-let rectMesh: pc.Mesh;
-let rectColor: pc.Color;
-let rectMaterial: pc.Material;
-let rectEntity: pc.Entity;
-let rectLayer: pc.Layer;
-let screenRect: pc.Vec4;
+/** @type {pc.Shader} */ let rectShader;
+/** @type {pc.Mesh} */ let rectMesh;
+/** @type {pc.Color} */ let rectColor;
+/** @type {pc.Material} */ let rectMaterial;
+/** @type {pc.Entity} */ let rectEntity;
+/** @type {pc.Layer} */ let rectLayer;
+/** @type {pc.Vec4} */ let screenRect;
 
 /**
  * 绘制框选矩形边框
- * @param rect 矩形范围
- * @param color 颜色
- * @param layer layer
+ * @param {pc.Vec4} rect 矩形范围
+ * @param {pc.Color} color 颜色
+ * @param {pc.Layer} layer layer
  */
-export function drawScreenRect(rect = defaultRect, color = defaultColor, layer?: pc.Layer): void
-{
+export function drawScreenRect(rect = defaultRect, color = defaultColor, layer) {
     rectEntity ?? createRectEntity(rect, color);
     rectEntity.enabled = true;
 
@@ -42,7 +37,7 @@ export function drawScreenRect(rect = defaultRect, color = defaultColor, layer?:
     }
 
     if (!rectColor.equals(color)) {
-        rectMaterial.setParameter("uColor", cast<Color_EX>(color).shaderData);
+        rectMaterial.setParameter("uColor", color.shaderData);
         rectMaterial.update();
         rectColor.copy(color);
     }
@@ -56,8 +51,7 @@ export function drawScreenRect(rect = defaultRect, color = defaultColor, layer?:
 /**
  * 清除框选矩形边框
  */
-export function clearScreenRect()
-{
+export function clearScreenRect() {
     if (rectEntity) {
         rectEntity.enabled = false;
     }
@@ -65,13 +59,12 @@ export function clearScreenRect()
 
 /**
  * 创建框选矩形边框物体实例
- * @param rect 矩形范围
- * @param color 颜色
- * @param layer layer
- * @returns 框选矩形边框物体实例
+ * @param {pc.Vec4} rect 矩形范围
+ * @param {pc.Color} color 颜色
+ * @param {pc.Layer} [layer] layer
+ * @returns {pc.Entity} 框选矩形边框物体实例
  */
-function createRectEntity(rect: pc.Vec4, color: pc.Color, layer?: pc.Layer): pc.Entity
-{
+function createRectEntity(rect, color, layer) {
     screenRect = new pc.Vec4().copy(rect);
     rectMesh = updateRectMesh(screenRect);
 
@@ -80,7 +73,7 @@ function createRectEntity(rect: pc.Vec4, color: pc.Color, layer?: pc.Layer): pc.
     rectMaterial = new pc.Material();
     rectMaterial.shader = rectShader;
     rectMaterial.blendType = pc.BLEND_NORMAL;
-    rectMaterial.setParameter("uColor", cast<Color_EX>(rectColor).shaderData);
+    rectMaterial.setParameter("uColor", rectColor.shaderData);
     rectMaterial.update();
 
     const meshInstance = new pc.MeshInstance(rectMesh, rectMaterial);
@@ -104,10 +97,9 @@ function createRectEntity(rect: pc.Vec4, color: pc.Color, layer?: pc.Layer): pc.
 
 /**
  * 创建shader
- * @returns shader
+ * @returns {pc.Shader} shader
  */
-function createRectShader(): pc.Shader
-{
+function createRectShader() {
     // shander定义
     const shaderDefinition = {
         attributes: {
@@ -124,11 +116,10 @@ function createRectShader(): pc.Shader
 
 /**
  * 更新框选矩形边框mesh
- * @param rect 矩形范围
- * @returns 更新后的mesh
+ * @param {pc.Vec4} rect 矩形范围
+ * @returns {pc.Mesh} 更新后的mesh
  */
-function updateRectMesh(rect: pc.Vec4 = new pc.Vec4(0, 0, 1, 1)): pc.Mesh
-{
+function updateRectMesh(rect = new pc.Vec4(0, 0, 1, 1)) {
     const positions = [
         rect.x * 2 - 1, 1 - 2 * rect.y, 0,
         (rect.x + rect.z) * 2 - 1, 1 - 2 * rect.y, 0,

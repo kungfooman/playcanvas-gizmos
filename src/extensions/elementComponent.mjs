@@ -1,19 +1,18 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-07 10:35:07
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-21 16:48:01
- * @ 详情: 扩展ElementComponent类
+ * 创建者: FBplus
+ * 创建时间: 2022-06-07 10:35:07
+ * 修改者: FBplus
+ * 修改时间: 2022-07-21 16:48:01
+ * 详情: 扩展ElementComponent类
  */
 
 import * as pc from "playcanvas";
 
-import GlobalVariables from "@/utils/common/GlobalVariables";
-import { cast, extendClass } from "@/utils/helpers/extend-decorator";
+import GlobalVariables from "../utils/common/GlobalVariables.mjs";
 
-import { Ray_EX } from "./ray";
-import { Texture_EX } from "./texture";
-import { Vec3_EX } from "./vec3";
+import { Ray_EX } from "./ray.mjs";
+import { Texture_EX } from "./texture.mjs";
+import { Vec3_EX } from "./vec3.mjs";
 
 const _temp = new pc.Vec3();
 const _temp1 = new pc.Vec3();
@@ -32,12 +31,11 @@ const _screenPosition = new pc.Vec3();
 
 /**
  * 获取射线与3维空间中矩形的交点，并返回类似uv坐标（原点在左下角，x与y取 [0,1]）的2维向量
- * @param ray 射线
- * @param corners 矩形的4个角的3维坐标
- * @returns 射线与矩形交点的类uv坐标
+ * @param {pc.Ray} ray 射线
+ * @param {pc.Vec3[]} corners 矩形的4个角的3维坐标
+ * @returns {pc.Vec2} 射线与矩形交点的类uv坐标
  */
-function calculateWorldUV(ray: pc.Ray, corners: pc.Vec3[]): pc.Vec2
-{
+function calculateWorldUV(ray, corners) {
     let x = 0;
     let y = 0;
     const width = corners[0].distance(corners[1]);
@@ -67,14 +65,17 @@ function calculateWorldUV(ray: pc.Ray, corners: pc.Vec3[]): pc.Vec2
     return _uv;
 }
 
-@extendClass(pc.ElementComponent)
-export class ElementComponent_EX extends pc.ElementComponent
-{
-    private _calculatedCorners: [pc.Vec3, pc.Vec3, pc.Vec3, pc.Vec3];
+//@extendClass(pc.ElementComponent)
+export class ElementComponent_EX extends pc.ElementComponent {
+    /**
+     * @private
+     * @type {[pc.Vec3, pc.Vec3, pc.Vec3, pc.Vec3]}
+     */
+    _calculatedCorners;
     /**
      * 获得element4个角的世界坐标
      */
-    get calculatedCorners(): [pc.Vec3, pc.Vec3, pc.Vec3, pc.Vec3]
+    get calculatedCorners()//: [pc.Vec3, pc.Vec3, pc.Vec3, pc.Vec3]
     {
         this._calculatedCorners = this._calculatedCorners ?? [new pc.Vec3(), new pc.Vec3(), new pc.Vec3(), new pc.Vec3()];
 
@@ -110,7 +111,7 @@ export class ElementComponent_EX extends pc.ElementComponent
         const deviceHeight = app.graphicsDevice.canvas.clientHeight;
         for (let i = 0; i < 4; i++) {
             _temp3.copy(cast<Vec3_EX>(this._calculatedCorners[i]).getGLPos());
-            if ((window as any).isForceLandscape)
+            if ((window /*as any*/).isForceLandscape)
                 this._calculatedCorners[i].set((_temp3.y * 0.5 + 0.5) * deviceHeight, (_temp3.x * 0.5 + 0.5) * deviceWidth, 1);
             else
                 this._calculatedCorners[i].set((_temp3.x * 0.5 + 0.5) * deviceWidth, (_temp3.y * 0.5 + 0.5) * deviceHeight, 1);
@@ -121,11 +122,12 @@ export class ElementComponent_EX extends pc.ElementComponent
 
     /**
      * 根据屏幕位置获得element的像素值
-     * @param screenPoint 屏幕坐标
-     * @param color 颜色值（不传则创建新的颜色）
-     * @returns element在此屏幕坐标的像素值
+     * @param {{ x: number, y: number }} screenPoint 屏幕坐标
+     * @param {pc.CameraComponent} [camera]
+     * @param {pc.Color} [color] 颜色值（不传则创建新的颜色）
+     * @returns {pc.Color} element在此屏幕坐标的像素值
      */
-    getPixelAt(screenPoint: { x: number, y: number }, camera?: pc.CameraComponent, color?: pc.Color): pc.Color
+    getPixelAt(screenPoint, camera, color)
     {
         const app = GlobalVariables.app;
         const pixelColor = color ?? new pc.Color();

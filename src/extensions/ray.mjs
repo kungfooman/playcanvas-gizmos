@@ -1,34 +1,29 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-07 11:26:17
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-21 16:48:46
- * @ 详情: 扩展Ray类
+ * 创建者: FBplus
+ * 创建时间: 2022-06-07 11:26:17
+ * 修改者: FBplus
+ * 修改时间: 2022-07-21 16:48:46
+ * 详情: 扩展Ray类
  */
 
 import * as pc from "playcanvas";
-
-import { extendClass } from "@/utils/helpers/extend-decorator";
 
 const diff = new pc.Vec3();
 const edge1 = new pc.Vec3();
 const edge2 = new pc.Vec3();
 const normal = new pc.Vec3();
 
-@extendClass(pc.Ray)
-export class Ray_EX extends pc.Ray
-{
+export class Ray_EX extends pc.Ray {
     /**
      * 获得射线和指定三角形的交点
-     * @param a 三角形a点坐标
-     * @param b 三角形b点坐标
-     * @param c 三角形c点坐标
-     * @param backfaceCulling 是否剔除背面
-     * @param res 交点（不传则创建新的向量）
-     * @returns 射线和三角形的交点
+     * @param {pc.Vec3} a 三角形a点坐标
+     * @param {pc.Vec3} b 三角形b点坐标
+     * @param {pc.Vec3} c 三角形c点坐标
+     * @param {boolean} backfaceCulling 是否剔除背面
+     * @param {pc.Vec3} [res] 交点（不传则创建新的向量）
+     * @returns {pc.Vec3} 射线和三角形的交点
      */
-    public intersectTriangle(a: pc.Vec3, b: pc.Vec3, c: pc.Vec3, backfaceCulling: boolean, res?: pc.Vec3): pc.Vec3
-    {
+    intersectTriangle(a, b, c, backfaceCulling, res) {
         res = res ?? new pc.Vec3();
         edge1.sub2(b, a);
         edge2.sub2(c, a);

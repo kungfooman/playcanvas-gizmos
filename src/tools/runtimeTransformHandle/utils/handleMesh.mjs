@@ -1,64 +1,64 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-04-22 10:00:25
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-13 15:16:48
- * @ 详情: runtime transform handle的mesh生成
+ * 创建者: FBplus
+ * 创建时间: 2022-04-22 10:00:25
+ * 修改者: FBplus
+ * 修改时间: 2022-07-13 15:16:48
+ * 详情: runtime transform handle的mesh生成
  */
 
 import * as pc from "playcanvas";
 
-import GlobalVariables from "@/utils/common/GlobalVariables";
+import GlobalVariables from "../../../utils/common/GlobalVariables.mjs";
 
 import {
     axisXMat, axisYMat, axisZMat, halfTransMat, planeEdgeXMat, planeEdgeYMat, planeEdgeZMat,
     planXMat, planYMat, planZMat, transparentMat
-} from "./handleShader";
-import MeshRaycaster from "./meshRaycaster";
+} from "./handleShader.mjs";
+import MeshRaycaster from "./meshRaycaster.mjs";
 
 // 选中类别
-export enum SelectType
-{
-    AxisX,
-    AxisY,
-    AxisZ,
-    AllAxis,
-    PlaneX,
-    PlaneY,
-    PlaneZ
+export const SelectType = {
+    AxisX: "AxisX",
+    AxisY: "AxisY",
+    AxisZ: "AxisZ",
+    AllAxis: "AllAxis",
+    PlaneX: "PlaneX",
+    PlaneY: "PlaneY",
+    PlaneZ: "PlaneZ",
 }
 
 // 添加layer
-let _RTHLayer: pc.Layer;
+/** @type {pc.Layer} */
+let _RTHLayer;
 export const RTHLayer = () => { return _RTHLayer || (_RTHLayer = new pc.Layer({ name: "RuntimeTransformHandle" })) };
 
 // handle对应的选中类别
-export let HandleMap: { [index: string]: SelectType } = {};
+/** @type {{ [index: string]: SelectType }} */
+export let HandleMap = {};
 
 // 坐标轴枚举
-export enum Axis
-{
-    X,
-    Y,
-    Z,
-    All
-}
+export const Axis = {
+    X: "X",
+    Y: "Y",
+    Z: "Z",
+    All: "All",
+};
 
 // 坐标轴材质列表
 const axisMaterialMap = {
-    [Axis.X]: axisXMat,
-    [Axis.Y]: axisYMat,
-    [Axis.Z]: axisZMat,
-    [Axis.All]: halfTransMat
-}
+    [Axis.X  ]: axisXMat,
+    [Axis.Y  ]: axisYMat,
+    [Axis.Z  ]: axisZMat,
+    [Axis.All]: halfTransMat,
+};
 
 // 坐标平面材质列表
 const planeMaterialMap = {
-    [Axis.X]: planXMat,
-    [Axis.Y]: planYMat,
-    [Axis.Z]: planZMat,
-    [Axis.All]: halfTransMat
-}
+    [Axis.X  ]: planXMat,
+    [Axis.Y  ]: planYMat,
+    [Axis.Z  ]: planZMat,
+    [Axis.All]: halfTransMat,
+};
 
 // 坐标平面边框材质列表
 const planeEdgeMaterialMap = {
@@ -97,10 +97,9 @@ const tempPoint = new pc.Vec3();
 
 /**
  * 生成位移handle组，包含x，y，z轴
- * @returns 位移handle物体
+ * @returns {pc.Entity} 位移handle物体
  */
-export function generateTranslationHandle(): pc.Entity
-{
+export function generateTranslationHandle() {
     const xHandle = generateTranslationAxis(Axis.X);
     const yHandle = generateTranslationAxis(Axis.Y);
     const zHandle = generateTranslationAxis(Axis.Z);
@@ -115,10 +114,9 @@ export function generateTranslationHandle(): pc.Entity
 
 /**
  * 生成旋转handle组，包含x，y，z轴
- * @returns 旋转handle物体
+ * @returns {pc.Entity} 旋转handle物体
  */
-export function generateRotatioHandle(): pc.Entity
-{
+export function generateRotatioHandle() {
     // TODO: 美化旋转轴，添加标明旋转状态的mesh和shader
     const xHandle = generateRotationAxis(Axis.X);
     const yHandle = generateRotationAxis(Axis.Y);
@@ -134,10 +132,9 @@ export function generateRotatioHandle(): pc.Entity
 
 /**
  * 生成缩放handle组，包含x，y，z轴
- * @returns 缩放handle物体
+ * @returns {pc.Entity} 缩放handle物体
  */
-export function generateScaleHandle(): pc.Entity
-{
+export function generateScaleHandle() {
     // TODO: 将放缩handle的头和尾的mesh分开，实现放缩时尾部伸缩的效果
     const xHandle = generateScaleAxis(Axis.X);
     const yHandle = generateScaleAxis(Axis.Y);
@@ -155,10 +152,10 @@ export function generateScaleHandle(): pc.Entity
 
 /**
  * 生成位移handle坐标轴
- * @returns 位移handle坐标轴物体
+ * @param {keyof Axis} axis
+ * @returns {pc.Entity} 位移handle坐标轴物体
  */
-function generateTranslationAxis(axis: Axis): pc.Entity
-{
+function generateTranslationAxis(axis) {
     const device = GlobalVariables.app.graphicsDevice;
 
     const headMesh = pc.createCone(device, { baseRadius: 0.6, peakRadius: 0, height: 2 });
@@ -188,7 +185,7 @@ function generateTranslationAxis(axis: Axis): pc.Entity
     });
     collisionMI.cull = false;
     collisionEntity.render.layers = [RTHLayer().id];
-    HandleMap[(collisionEntity as any)._guid] = getSelectAxis(axis);
+    HandleMap[collisionEntity._guid] = getSelectAxis(axis);
     MeshRaycaster.addMeshInstances(collisionMI);
 
     const planeMesh = pc.createPlane(device, { halfExtents: new pc.Vec2(1.5, 1.5) });
@@ -219,7 +216,7 @@ function generateTranslationAxis(axis: Axis): pc.Entity
     planeEntity.render.layers = [RTHLayer().id];
     edge1Entity.render.layers = [RTHLayer().id];
     edge2Entity.render.layers = [RTHLayer().id];
-    HandleMap[(planeEntity as any)._guid] = getSelectPlane(axis);
+    HandleMap[planeEntity._guid] = getSelectPlane(axis);
     MeshRaycaster.addMeshInstances(planeMI);
 
     const combineEntity = new pc.Entity();
@@ -234,10 +231,10 @@ function generateTranslationAxis(axis: Axis): pc.Entity
 
 /**
  * 生成旋转handle坐标轴
- * @returns 旋转handle坐标轴物体
+ * @param {Axis} axis
+ * @returns {pc.Entity} 旋转handle坐标轴物体
  */
-function generateRotationAxis(axis: Axis): pc.Entity
-{
+function generateRotationAxis(axis) {
     const device = GlobalVariables.app.graphicsDevice;
 
     const handleMesh = pc.createTorus(device, { tubeRadius: 0.05, ringRadius: 10, segments: 72 });
@@ -245,8 +242,10 @@ function generateRotationAxis(axis: Axis): pc.Entity
     transformMeshPoint(handleMesh, [transformMat]);
 
     // 取mesh
-    const meshPositions = new Array<number>();
-    const meshIndices = new Array<number>();
+    /** @type {number[]} */
+    const meshPositions = [];
+    /** @type {number[]} */
+    const meshIndices = [];
     handleMesh.getPositions(meshPositions);
     handleMesh.getIndices(meshIndices);
 
@@ -268,7 +267,7 @@ function generateRotationAxis(axis: Axis): pc.Entity
     });
     collisionMI.cull = false;
     collisionEntity.render.layers = [RTHLayer().id];
-    HandleMap[(collisionEntity as any)._guid] = getSelectAxis(axis);
+    HandleMap[collisionEntity._guid] = getSelectAxis(axis);
     MeshRaycaster.addMeshInstances(collisionMI);
 
     const combineEntity = new pc.Entity();
@@ -280,10 +279,10 @@ function generateRotationAxis(axis: Axis): pc.Entity
 
 /**
  * 生成缩放handle坐标轴
- * @returns 缩放handle坐标轴物体
+ * @param {Axis} axis
+ * @returns {pc.Entity} 缩放handle坐标轴物体
  */
-function generateScaleAxis(axis: Axis): pc.Entity
-{
+function generateScaleAxis(axis) {
     const device = GlobalVariables.app.graphicsDevice;
 
     const headMesh = pc.createBox(device, { halfExtents: new pc.Vec3(0.6, 0.6, 0.6) });
@@ -313,7 +312,7 @@ function generateScaleAxis(axis: Axis): pc.Entity
     });
     collisionMI.cull = false;
     collisionEntity.render.layers = [RTHLayer().id];
-    HandleMap[(collisionEntity as any)._guid] = getSelectAxis(axis);
+    HandleMap[collisionEntity._guid] = getSelectAxis(axis);
     MeshRaycaster.addMeshInstances(collisionMI);
 
     const combineEntity = new pc.Entity();
@@ -323,8 +322,10 @@ function generateScaleAxis(axis: Axis): pc.Entity
     return combineEntity;
 }
 
-function generateScaleCenter(): pc.Entity
-{
+/**
+ * @returns {pc.Entity}
+ */
+function generateScaleCenter() {
     const device = GlobalVariables.app.graphicsDevice;
 
     const mesh = pc.createBox(device, { halfExtents: new pc.Vec3(0.8, 0.8, 0.8) });
@@ -336,7 +337,7 @@ function generateScaleCenter(): pc.Entity
     });
     mi.cull = false;
     entity.render.layers = [RTHLayer().id];
-    HandleMap[(entity as any)._guid] = getSelectAxis(Axis.All);
+    HandleMap[entity._guid] = getSelectAxis(Axis.All);
     MeshRaycaster.addMeshInstances(mi);
 
     return entity;
@@ -344,14 +345,16 @@ function generateScaleCenter(): pc.Entity
 
 /**
  * 对mesh的每一个顶点进行集合变换
- * @param mesh mesh
- * @param transforms 变换集合
+ * @param {pc.Mesh} mesh mesh
+ * @param {Array<pc.Mat4 | pc.Vec3>} transforms 变换集合
  */
-function transformMeshPoint(mesh: pc.Mesh, transforms: Array<pc.Mat4 | pc.Vec3>): void
-{
-    let positions = new Array<number>();
-    let indices = new Array<number>();
-    let normals = new Array<number>();
+function transformMeshPoint(mesh, transforms) {
+    /** @type {number[]} */
+    let positions = [];
+    /** @type {number[]} */
+    let indices = [];
+    /** @type {number[]} */
+    let normals = [];
     mesh.getPositions(positions);
     mesh.getIndices(indices);
 
@@ -384,17 +387,22 @@ function transformMeshPoint(mesh: pc.Mesh, transforms: Array<pc.Mat4 | pc.Vec3>)
 
 /**
  * 将一组mesh拼接起来
- * @param meshes mesh集合
- * @returns 拼接完成的新mesh
+ * @param {pc.Mesh[]} meshes mesh集合
+ * @returns {pc.Mesh} 拼接完成的新mesh
  */
-function combineMesh(meshes: pc.Mesh[]): pc.Mesh
-{
-    let positions = new Array<number>();
-    let newPositions = new Array<number>();
-    let indices = new Array<number>();
-    let newIndices = new Array<number>();
-    let normals = new Array<number>();
-    let newNormals = new Array<number>();
+function combineMesh(meshes) {
+    /** @type {number[]} */
+    let positions = [];
+    /** @type {number[]} */
+    let newPositions = [];
+    /** @type {number[]} */
+    let indices = [];
+    /** @type {number[]} */
+    let newIndices = [];
+    /** @type {number[]} */
+    let normals = [];
+    /** @type {number[]} */
+    let newNormals = [];
     for (let i = 0; i < meshes.length; i++) {
         const mesh = meshes[i];
         mesh.getPositions(positions);
@@ -424,11 +432,10 @@ function combineMesh(meshes: pc.Mesh[]): pc.Mesh
 
 /**
  * 根据坐标轴获取选中类型轴
- * @param axis 坐标轴
- * @returns 对应的选中坐标轴
+ * @param {keyof Axis} axis 坐标轴
+ * @returns {string | keyof SelectType} 对应的选中坐标轴
  */
-function getSelectAxis(axis: Axis): SelectType
-{
+function getSelectAxis(axis) {
     switch (axis) {
         case Axis.X:
             return SelectType.AxisX;
@@ -439,15 +446,15 @@ function getSelectAxis(axis: Axis): SelectType
         case Axis.All:
             return SelectType.AllAxis;
     }
+    throw "invalid enum";
 }
 
 /**
  * 根据坐标轴获取选中类型平面
- * @param axis 坐标轴
- * @returns 对应的选中平面
+ * @param {keyof Axis} axis 坐标轴
+ * @returns {string | keyof SelectType} 对应的选中平面
  */
-function getSelectPlane(axis: Axis): SelectType
-{
+function getSelectPlane(axis) {
     switch (axis) {
         case Axis.X:
             return SelectType.PlaneX;
@@ -456,4 +463,5 @@ function getSelectPlane(axis: Axis): SelectType
         case Axis.Z:
             return SelectType.PlaneZ;
     }
+    throw "invalid enum";
 }

@@ -1,98 +1,111 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-05-18 15:35:26
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-13 14:36:51
- * @ 详情: 描边相机
+ * 创建者: FBplus
+ * 创建时间: 2022-05-18 15:35:26
+ * 修改者: FBplus
+ * 修改时间: 2022-07-13 14:36:51
+ * 详情: 描边相机
  */
 
 import * as pc from "playcanvas";
 
-import { CameraComponent_EX } from "@/extensions/cameraComponent";
-import { MaterialController } from "@/utils/func/materialController";
-import { cast } from "@/utils/helpers/extend-decorator";
-import { Tool } from "@/utils/helpers/toolBase";
-import { tool } from "@/utils/helpers/useToolHelper";
-import { PostEffectOutline } from "@/utils/postEffects/posteffectOutline";
+import { CameraComponent_EX } from "../../extensions/cameraComponent.mjs";
+import { MaterialController } from "../../utils/func/materialController.mjs";
+import { PostEffectOutline } from "../../utils/postEffects/posteffectOutline.mjs";
 
 /**
  * LayerId
  */
-type LayerId = number;
+//type LayerId = number;
 /**
  * 外边框相机选项
  */
-export interface outlineCameraOptions
-{
-    mainCamra?: pc.CameraComponent;
-    outlineLayerName?: string;
-    outlineColor?: pc.Color;
-    outlineThickness?: number;
-}
+//export interface outlineCameraOptions
+//{
+//    mainCamra?: pc.CameraComponent;
+//    outlineLayerName?: string;
+//    outlineColor?: pc.Color;
+//    outlineThickness?: number;
+//}
 /**
  * 存储每个render对应的layer组
  */
-const layerMap: Map<pc.RenderComponent | pc.ModelComponent, LayerId[]> = new Map<pc.RenderComponent, LayerId[]>();
+/**
+ * @type {Map<pc.RenderComponent | pc.ModelComponent, LayerId[]>}
+ */
+const layerMap = new Map();
 
-@tool("OutlineCamera")
-export class OutlineCamera extends Tool<outlineCameraOptions, any>
-{
+//@tool("OutlineCamera")
+export class OutlineCamera {
     // 默认选项
-    protected toolOptionsDefault: outlineCameraOptions = {
+    /** @type {outlineCameraOptions} */
+    toolOptionsDefault = {
         mainCamra: this.app.systems.camera.cameras[0],
         outlineLayerName: "OutlineLayer",
         outlineColor: pc.Color.WHITE,
         outlineThickness: 2
     };
-    private outlineLayer: pc.Layer;
-    private outlineEffect: PostEffectOutline;
-    private outlineCamera: pc.CameraComponent;
 
-    constructor(options?: outlineCameraOptions)
-    {
-        super();
-        this.setOptions(options);
+    get app() {
+        return pc.Application.getApplication();
+    }
+
+    /** @type {pc.Layer} */ outlineLayer;
+    /** @type {PostEffectOutline} */ outlineEffect;
+    /** @type {pc.CameraComponent} */ outlineCamera;
+
+    /**
+     * 
+     * @param {outlineCameraOptions} [options] 
+     */
+    constructor(options) {
+
+        this.toolOptions = {
+            ...this.toolOptionsDefault,
+            ...options,
+        };
+        // 重置特效
+        this.initEffect({
+            color: this.toolOptions.outlineColor,
+            thickness: this.toolOptions.outlineThickness,
+        });
     }
 
     /**
      * 设置外边框相机选项
-     * @param options 外边框相机选项
+     * @param {outlineCameraOptions} options 外边框相机选项
      */
-    public override setOptions(options: outlineCameraOptions): void
-    {
-        super.setOptions(options);
-        // 重置特效
-        this.initEffect({ color: this.toolOptions.outlineColor, thickness: this.toolOptions.outlineThickness });
+    setOptions(options) {
+        throw "todo remove"
     }
 
     /**
     * 更新外边框相机选项
-    * @param options 外边框相机选项
+    * @param {outlineCameraOptions} options 外边框相机选项
     */
-    public override updateOptions(options: outlineCameraOptions): void
+    updateOptions(options)
     {
-        super.updateOptions(options);
+        //super.updateOptions(options);
         // 重置特效
         this.initEffect({ color: this.toolOptions.outlineColor, thickness: this.toolOptions.outlineThickness });
     }
 
     /**
     * 开启或关闭描边特效
-    * @param entity 节点
-    * @param state 开关状态
+    * @param {pc.Entity} entity 节点
+    * @param {boolean} state 开关状态
     */
-    public toggleOutLine(entity: pc.Entity, isOn: boolean): void
+    toggleOutLine(entity, isOn)
     {
         const outLineLayerId = this.app.scene.layers.getLayerByName(this.toolOptions.outlineLayerName).id;
         MaterialController.processNodeDeep(entity, null, model =>
         {
-            const renderComponent = model as pc.RenderComponent;
+            const renderComponent = model /*as pc.RenderComponent*/;
             if (renderComponent.layers) {
                 !layerMap.get(renderComponent) && layerMap.set(renderComponent, [...renderComponent.layers]);
                 const preLayers = layerMap.get(renderComponent);
                 renderComponent.layers = isOn ? [...preLayers, outLineLayerId] : preLayers;
             }
-            const modelComponent = model as pc.ModelComponent;
+            const modelComponent = model /*as pc.ModelComponent*/;
             if (modelComponent.layers) {
                 !layerMap.get(modelComponent) && layerMap.set(modelComponent, [...modelComponent.layers]);
                 const preLayers = layerMap.get(modelComponent);
@@ -103,12 +116,11 @@ export class OutlineCamera extends Tool<outlineCameraOptions, any>
 
     /**
     * 初始化后期特效
-    * @param option 描边设置
-    * @param option.color 描边颜色
-    * @param option.thickness 描边粗细
+    * @param {object} [option] 描边设置
+    * @param {pc.Color} option.color 描边颜色
+    * @param {number} option.thickness 描边粗细
     */
-    private initEffect(option?: { color: pc.Color, thickness: number }): void
-    {
+    initEffect(option) {
         // 创建并添加描边layer
         if (this.outlineLayer == undefined) {
             let outlineLayer = new pc.Layer({ name: this.toolOptions.outlineLayerName });
@@ -123,13 +135,13 @@ export class OutlineCamera extends Tool<outlineCameraOptions, any>
             let outlineCamera = outlineCameraEntity.addComponent("camera", {
                 clearColor: new pc.Color(0.0, 0.0, 0.0, 0.0), // 透明背景色
                 layers: [this.outlineLayer.id] // 只渲染outlineLayer
-            }) as pc.CameraComponent;
+            }) /*as pc.CameraComponent*/;
             this.app.root.addChild(outlineCameraEntity);
             this.outlineCamera = outlineCamera;
         }
 
         // 创建描边特效并添加至相机
-        this.outlineEffect && this.toolOptions.mainCamra.postEffects.removeEffect(this.outlineEffect as any); // 先清空特效
+        this.outlineEffect && this.toolOptions.mainCamra.postEffects.removeEffect(this.outlineEffect); // 先清空特效
         // 若传入了设置，则重新生成特效；若不传入设置，不重新生成，仅重置特效
         if (option) {
             this.outlineEffect = new PostEffectOutline(this.app.graphicsDevice, {
@@ -141,18 +153,18 @@ export class OutlineCamera extends Tool<outlineCameraOptions, any>
         else {
             this.outlineEffect.refresh();
         }
-        this.toolOptions.mainCamra.postEffects.addEffect(this.outlineEffect as any); // 添加特效至相机
-        cast<CameraComponent_EX>(this.outlineCamera).follow(this.toolOptions.mainCamra); // 同步相机
+        this.toolOptions.mainCamra.postEffects.addEffect(this.outlineEffect); // 添加特效至相机
+        // todo What is follow()?
+        //this.outlineCamera.follow(this.toolOptions.mainCamra); // 同步相机
     }
 
     /**
     * 创建大小为整个屏幕的renderTarget（用于后期）
-    * @returns 可以覆盖整个屏幕的renderTarget 
+    * @returns {pc.RenderTarget} 可以覆盖整个屏幕的renderTarget 
     */
-    private createRenderTarget(): pc.RenderTarget
-    {
+    createRenderTarget() {
         // 创建贴图
-        const texture = new pc.Texture(this.app.graphicsDevice, {
+        const colorBuffer = new pc.Texture(this.app.graphicsDevice, {
             width: this.app.graphicsDevice.width,
             height: this.app.graphicsDevice.height,
             format: pc.PIXELFORMAT_R8_G8_B8_A8,
@@ -163,7 +175,7 @@ export class OutlineCamera extends Tool<outlineCameraOptions, any>
 
         // 返回renderTarget
         return new pc.RenderTarget({
-            colorBuffer: texture,
+            colorBuffer,
             depth: false
         });
     }
@@ -171,7 +183,7 @@ export class OutlineCamera extends Tool<outlineCameraOptions, any>
     /**
      * 重设特效，一般为窗口大小改变时调用
      */
-    private resetEffect(): void
+    resetEffect()
     {
         // 此函数不传option参数表示重设特效
         this.initEffect();
@@ -180,17 +192,17 @@ export class OutlineCamera extends Tool<outlineCameraOptions, any>
     /**
      * 窗口缩放时调用
      */
-    private onResize(): void
+    onResize()
     {
         this.resetEffect();
     }
 
-    protected override onEnable(): void
+    onEnable()
     {
         this.app.graphicsDevice.on("resizecanvas", this.onResize, this);
     }
 
-    protected override onDisable(): void
+    onDisable()
     {
         this.app.graphicsDevice.off("resizecanvas", this.onResize, this);
     }

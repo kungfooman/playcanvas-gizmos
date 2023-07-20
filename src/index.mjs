@@ -1,35 +1,32 @@
 // extensions
-export { CameraComponent_EX } from "./extensions/cameraComponent";
-export { Color_EX } from "./extensions/color";
-export { Curve_EX } from "./extensions/curve";
-export { ElementComponent_EX } from "./extensions/elementComponent";
-export { Entity_EX } from "./extensions/entity";
-export { GraphNode_EX } from "./extensions/graphNode";
-export { MeshInstance_EX } from "./extensions/meshInstance";
-export { Quat_EX } from "./extensions/quat";
-export { Ray_EX } from "./extensions/ray";
-export { Texture_EX } from "./extensions/texture";
-export { Vec2_EX } from "./extensions/vec2";
-export { Vec3_EX } from "./extensions/vec3";
-export { Vec4_EX } from "./extensions/vec4";
+export * from "./extensions/cameraComponent.mjs";
+export * from "./extensions/color.mjs";
+export * from "./extensions/curve.mjs";
+export * from "./extensions/elementComponent.mjs";
+export * from "./extensions/entity.mjs";
+export * from "./extensions/graphNode.mjs";
+export * from "./extensions/meshInstance.mjs";
+export * from "./extensions/quat.mjs";
+export * from "./extensions/ray.mjs";
+export * from "./extensions/texture.mjs";
+export * from "./extensions/vec2.mjs";
+export * from "./extensions/vec3.mjs";
+export * from "./extensions/vec4.mjs";
 // tools
-export * as Tools from "./tools";
+export * as Tools from "./tools/index.mjs";
 // utils
-export { InputEventsMap } from "./utils/common/InputEventsMap";
-export { Constructable, Constructor } from "./utils/common/TypesAndInterfaces";
-export { DebugLine } from "./utils/func/debugLine";
-export { drawScreenQuad } from "./utils/func/drawSelectionBox/drawScreenQuad";
-export { drawScreenRect } from "./utils/func/drawSelectionBox/drawScreenRect";
-export { drawSelectionBox } from "./utils/func/drawSelectionBox/drawSelectionBox";
-export { MaterialController } from "./utils/func/materialController";
-export { attr, createScript, ScriptTypeBase } from "./utils/helpers/create-script-decorator";
-export { attrEX, createScriptEX, ScriptTypeEX } from "./utils/helpers/create-script-decorator_ex";
-export { cast, extendClass } from "./utils/helpers/extend-decorator";
-export { frag, glsl, glslify, vert } from "./utils/helpers/shaderHelper";
-export { Tool } from "./utils/helpers/toolBase";
-export { use, useGlobal } from "./utils/helpers/useToolHelper";
-export { PostEffectOutline } from "./utils/postEffects/posteffectOutline";
+export * from "./utils/func/debugLine.mjs";
+export * from "./utils/func/drawSelectionBox/drawScreenQuad.mjs";
+export * from "./utils/func/drawSelectionBox/drawScreenRect.mjs";
+export * from "./utils/func/drawSelectionBox/drawSelectionBox.mjs";
+export * from "./utils/func/materialController.mjs";
+export * from "./utils/helpers/create-script-decorator.mjs";
+export * from "./utils/helpers/create-script-decorator_ex.mjs";
+export * from "./utils/helpers/extend-decorator.mjs";
+export * from "./utils/helpers/shaderHelper.mjs";
+export * from "./utils/helpers/toolBase.mjs";
+export * from "./utils/helpers/useToolHelper.mjs";
+export * from "./utils/postEffects/posteffectOutline.mjs";
 // ui
-export { Toggle } from "./utils/ui/toggle";
-export { ToggleGroup } from "./utils/ui/toggleGroup";
-
+export * from "./utils/ui/toggle.mjs";
+export * from "./utils/ui/toggleGroup.mjs";

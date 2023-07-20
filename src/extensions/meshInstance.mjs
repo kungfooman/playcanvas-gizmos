@@ -1,30 +1,26 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-07 14:40:45
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-21 16:48:33
- * @ 详情: 扩展MeshInstance类
+ * 创建者: FBplus
+ * 创建时间: 2022-06-07 14:40:45
+ * 修改者: FBplus
+ * 修改时间: 2022-07-21 16:48:33
+ * 详情: 扩展MeshInstance类
  */
 
 import * as pc from "playcanvas";
 
-import { cast, extendClass } from "@/utils/helpers/extend-decorator";
-
-import { Ray_EX } from "./ray";
-
 /**
  * 相交信息
  */
-export interface intersect
-{
-    index: number, // 相交三角形索引
-    distance: number,// 相交三角形和相机的距离
-    point: pc.Vec3, // 交点世界坐标
-    localPoint: pc.Vec3, // 交点本地坐标
-    normal: pc.Vec3, // 相交三角形法线
-    vertices: [pc.Vec3, pc.Vec3, pc.Vec3], // 相交三角形三个点的坐标
-    meshInstance: pc.MeshInstance // 相交三角形所处的meshInstance
-}
+/**
+ * @typedef {object} intersect
+ * @property {number} index - 相交三角形索引
+ * @property {number} distance - 相交三角形和相机的距离
+ * @property {pc.Vec3} point - 交点世界坐标
+ * @property {pc.Vec3} localPoint - 交点本地坐标
+ * @property {pc.Vec3} normal - 相交三角形法线
+ * @property {[pc.Vec3, pc.Vec3, pc.Vec3]} vertices - 相交三角形三个点的坐标
+ * @property {pc.MeshInstance} meshInstance - 相交三角形所处的meshInstance
+ */
 
 const localRay = new pc.Ray();
 const distance = new pc.Vec3();
@@ -44,17 +40,16 @@ const worldCoord = new pc.Vec3();
 
 /**
  * 相交检测
- * @param meshInstance 三角形所在meshInstance
- * @param i 三角形索引
- * @param worldRay 世界射线
- * @param a 三角形a点坐标
- * @param b 三角形b点坐标
- * @param c 三角形c点坐标
- * @param point 交点坐标（不传则创建新的向量）
+ * @param {pc.MeshInstance} meshInstance 三角形所在meshInstance
+ * @param {number} i 三角形索引
+ * @param {pc.Ray} worldRay 世界射线
+ * @param {pc.Vec3} a 三角形a点坐标
+ * @param {pc.Vec3} b 三角形b点坐标
+ * @param {pc.Vec3} c 三角形c点坐标
+ * @param {pc.Vec3} [point] 交点坐标（不传则创建新的向量）
  * @returns 相交信息
  */
-function checkIntersection(meshInstance: pc.MeshInstance, i: number, worldRay: pc.Ray, a: pc.Vec3, b: pc.Vec3, c: pc.Vec3, point?: pc.Vec3): intersect
-{
+function checkIntersection(meshInstance, i, worldRay, a, b, c, point) {
     const backfaceCulling = (
         meshInstance.material.cull === pc.CULLFACE_BACK ||
         meshInstance.material.cull === pc.CULLFACE_FRONTANDBACK
@@ -62,10 +57,10 @@ function checkIntersection(meshInstance: pc.MeshInstance, i: number, worldRay: p
 
     let intersect;
 
-    if ((meshInstance as any).skinInstance) {
-        intersect = cast<Ray_EX>(worldRay).intersectTriangle(a, b, c, backfaceCulling, point);
+    if (meshInstance.skinInstance) {
+        intersect = worldRay.intersectTriangle(a, b, c, backfaceCulling, point);
     } else {
-        intersect = cast<Ray_EX>(localRay).intersectTriangle(a, b, c, backfaceCulling, point);
+        intersect = localRay.intersectTriangle(a, b, c, backfaceCulling, point);
     }
 
     if (intersect === null) return null;
@@ -76,7 +71,7 @@ function checkIntersection(meshInstance: pc.MeshInstance, i: number, worldRay: p
     localCoord.copy(intersect);
     worldCoord.copy(intersect);
 
-    if ((meshInstance as any).skinInstance) {
+    if (meshInstance.skinInstance) {
         localTransform.transformPoint(localCoord, localCoord);
     } else {
         worldTransform.transformPoint(worldCoord, worldCoord);
@@ -100,19 +95,18 @@ function checkIntersection(meshInstance: pc.MeshInstance, i: number, worldRay: p
     };
 }
 
-@extendClass(pc.MeshInstance)
-export class MeshInstance_EX extends pc.MeshInstance
-{
+//@extendClass(pc.MeshInstance)
+export class MeshInstance_EX extends pc.MeshInstance {
     /**
      * 检测射线与此meshInstance的交点
-     * @param worldRay 要求交的射线
-     * @param intersects 交点集合（不传则创建新的数组）
-     * @returns 交点集合
+     * @param {pc.Ray} worldRay 要求交的射线
+     * @param {Array<intersect>} [intersects] 交点集合（不传则创建新的数组）
+     * @returns {Array<intersect>} 交点集合
      */
-    intersectsRay(worldRay: pc.Ray, intersects?: Array<intersect>): Array<intersect>
-    {
+    intersectsRay(worldRay, intersects) {
         aabb.copy(this.aabb);
-        if (aabb.intersectsRay(worldRay) === false) return null;
+        if (aabb.intersectsRay(worldRay) === false)
+            return null;
 
         const vertexBuffer = this.mesh.vertexBuffer;
         const indexBuffer = this.mesh.indexBuffer[0];
@@ -120,10 +114,10 @@ export class MeshInstance_EX extends pc.MeshInstance
         const count = this.mesh.primitive[0].count;
         const dataF = new Float32Array(vertexBuffer.lock());
         const data8 = new Uint8Array(vertexBuffer.lock());
-        const indices = (indexBuffer as any).bytesPerIndex === 2 ? new Uint16Array(indexBuffer.lock()) : new Uint32Array(indexBuffer.lock());
-        const elems = (vertexBuffer as any).format.elements;
-        const numVerts = (vertexBuffer as any).numVertices;
-        const vertSize = (vertexBuffer as any).format.size;
+        const indices  = indexBuffer.bytesPerIndex === 2 ? new Uint16Array(indexBuffer.lock()) : new Uint32Array(indexBuffer.lock());
+        const elems    = vertexBuffer.format.elements;
+        const numVerts = vertexBuffer.numVertices;
+        const vertSize = vertexBuffer.format.size;
         let i, j, k, index;
 
         let offsetP = 0;
@@ -157,10 +151,10 @@ export class MeshInstance_EX extends pc.MeshInstance
         localTransform.transformVector(localRay.direction, localRay.direction);
 
 
-        if ((this as any).skinInstance) {
+        if (this.skinInstance) {
             let boneIndices = [0, 0, 0, 0];
             let boneWeights = [0, 0, 0, 0];
-            let boneMatrices = (this as any).skinInstance.matrices;
+            let boneMatrices = this.skinInstance.matrices;
             let boneWeightVertices = [new pc.Vec3(), new pc.Vec3(), new pc.Vec3(), new pc.Vec3()];
 
             for (i = base; i < base + count; i += 3) {

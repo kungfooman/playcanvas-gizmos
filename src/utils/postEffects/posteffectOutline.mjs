@@ -1,38 +1,39 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-06-07 16:06:56
- * @ 修改者: FBplus
- * @ 修改时间: 2022-07-08 16:08:53
- * @ 详情: 描边特效
+ * 创建者: FBplus
+ * 创建时间: 2022-06-07 16:06:56
+ * 修改者: FBplus
+ * 修改时间: 2022-07-08 16:08:53
+ * 详情: 描边特效
  */
 
 import * as pc from "playcanvas";
 
 // 描边特效参数
-interface OutlineEffectOption
-{
-    outlineLayer: pc.Layer,
-    color: pc.Color,
-    thickness: number
-}
+/**
+ * @typedef {Object} OutlineEffectOption
+ * @property {pc.Layer} outlineLayer
+ * @property {pc.Color} color
+ * @property {Number} thickness 
+ */
 
 // 描边特效
-export class PostEffectOutline extends pc.PostEffect
-{
-    private texture: pc.Texture;
-    private colorData: Float32Array;
-    private outlineLayer: pc.Layer;
+export class PostEffectOutline extends pc.PostEffect {
+    /** @type {pc.Texture} */
+    texture;
+    /** @type {Float32Array} */
+    colorData;
+    /** @type {pc.Layer} */
+    outlineLayer;
 
     /**
      * 创建描边特效
-     * @param graphicsDevice 当前app的graphicsDevice
-     * @param option 描边设置
-     * @param option.outlineLayer 描边Layer，用于从中读取描边相机的内容
-     * @param option.color 描边颜色
-     * @param option.thickness 描边粗细
+     * @param {pc.GraphicsDevice} graphicsDevice 当前app的graphicsDevice
+     * @param {OutlineEffectOption} option 描边设置
+     * @param {} option.outlineLayer 描边Layer，用于从中读取描边相机的内容
+     * @param {} option.color 描边颜色
+     * @param {} option.thickness 描边粗细
      */
-    constructor(graphicsDevice: pc.GraphicsDevice, option: OutlineEffectOption)
-    {
+    constructor(graphicsDevice, option) {
         super(graphicsDevice);
 
         this.shader = new pc.Shader(graphicsDevice, {
@@ -93,12 +94,11 @@ export class PostEffectOutline extends pc.PostEffect
 
     /**
      * 渲染函数，由引擎自动每帧调用
-     * @param inputTarget 引擎输入renderTaget，为当前的渲染画面
-     * @param outputTarget 引擎输出的renderTarget，即经过后期处理之后的画面
-     * @param rect 引擎传入的矩形，用来表示整个屏幕的范围
+     * @param {pc.RenderTarget} inputTarget 引擎输入renderTaget，为当前的渲染画面
+     * @param {pc.RenderTarget} outputTarget 引擎输出的renderTarget，即经过后期处理之后的画面
+     * @param {pc.Vec4} rect 引擎传入的矩形，用来表示整个屏幕的范围
      */
-    render(inputTarget: pc.RenderTarget, outputTarget: pc.RenderTarget, rect: pc.Vec4): void
-    {
+    render(inputTarget, outputTarget, rect) {
         var device = this.device;
         var scope = device.scope;
 
@@ -113,8 +113,7 @@ export class PostEffectOutline extends pc.PostEffect
     /**
      * 刷新特效，一般用于窗口尺寸改变时
      */
-    refresh(): void
-    {
+    refresh() {
         this.texture = this.outlineLayer.renderTarget.colorBuffer;
     }
 }

@@ -1,14 +1,14 @@
 /**
- * @ 创建者: FBplus
- * @ 创建时间: 2022-07-25 17:58:39
- * @ 修改者: FBplus
- * @ 修改时间: 2022-09-06 16:13:46
- * @ 详情: 脚本创建装饰器
+ * 创建者: FBplus
+ * 创建时间: 2022-07-25 17:58:39
+ * 修改者: FBplus
+ * 修改时间: 2022-09-06 16:13:46
+ * 详情: 脚本创建装饰器
  */
 
 import * as pc from "playcanvas";
 
-import { Constructor } from "../common/TypesAndInterfaces";
+// import type { Constructor } from "../common/TypesAndInterfaces";
 
 // 排除的实例成员名称
 const exceptInstanceMemberNames = [
