@@ -371,7 +371,6 @@ export class OrbitCameraInput_Mouse {
             console.error("鼠标设备不存在，请更改输入设备");
             return;
         }
-        console.log("NEW MOUSE");
         this.onEnable();
     }
     get app() {
@@ -382,8 +381,7 @@ export class OrbitCameraInput_Mouse {
      * @param {globalThis.MouseEvent} event 鼠标按下事件
      */
     onMouseDown(event) {
-        console.log("event", event);
-        const orbitCamera = this.toolOptions.orbitCamera;
+        const { orbitCamera } = this.toolOptions;
         const orbitCameraOptions = orbitCamera.toolOptions;
         switch (event.button) {
             case pc.MOUSEBUTTON_LEFT:
@@ -448,8 +446,7 @@ export class OrbitCameraInput_Mouse {
      * @param {OrbitCameraInputOption} event 鼠标滚轮事件
      */
     onMouseWheel(event) {
-        console.log("mouse wheel", event);
-        const orbitCamera = this.toolOptions.orbitCamera;
+        const { orbitCamera } = this.toolOptions;
         const orbitCameraOptions = orbitCamera.toolOptions;
         if (!orbitCameraOptions.distanceCondition || orbitCameraOptions.distanceCondition()) {
             orbitCamera.distance += event.wheelDelta * this.toolOptions.distanceSensitivity * (orbitCamera.distance * 0.1);
@@ -460,7 +457,7 @@ export class OrbitCameraInput_Mouse {
      * @param {{ x: number, y: number }} event 鼠标移动事件
      */
     pan(event) {
-        const orbitCamera = this.toolOptions.orbitCamera;
+        const { orbitCamera } = this.toolOptions;
         const camera = orbitCamera.toolOptions.mainCamera;
         camera.screenToWorld(event.x, event.y, orbitCamera.distance, this.fromWorldPoint);
         camera.screenToWorld(this.lastPoint.x, this.lastPoint.y, orbitCamera.distance, this.toWorldPoint);

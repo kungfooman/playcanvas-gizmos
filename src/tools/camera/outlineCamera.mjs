@@ -137,7 +137,7 @@ export class OutlineCamera {
         }
         // 创建描边特效并添加至相机
         if (this.outlineEffect) {
-            console.log("OutlineCamera#initEffect> remove effect", this.outlineEffect);
+            // console.log("OutlineCamera#initEffect> remove effect", this.outlineEffect);
             this.toolOptions.mainCamera.postEffects.removeEffect(this.outlineEffect); // 先清空特效
         }
         // 若传入了设置，则重新生成特效；若不传入设置，不重新生成，仅重置特效
