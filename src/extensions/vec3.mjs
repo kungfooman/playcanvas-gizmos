@@ -20,8 +20,6 @@ const _vV2 = new pc.Vec3();
 
 export class Vec3_EX extends pc.Vec3 {
     private _rotation: pc.Quat;
-    private _shaderData: Float32Array;
-
     /**
      * 获得此3维向量的朝向rotation
      */
@@ -29,19 +27,6 @@ export class Vec3_EX extends pc.Vec3 {
     {
         this._rotation = this._rotation ?? new pc.Quat();
         return cast<Quat_EX>(this._rotation).setLookRotation(pc.Vec3.ZERO, this, pc.Vec3.UP);
-    }
-
-    /**
-     * 用于传入shader的数据
-     */
-    get shaderData(): Float32Array
-    {
-        this._shaderData = this._shaderData || new Float32Array(3);
-        this._shaderData[0] = this.x;
-        this._shaderData[1] = this.y;
-        this._shaderData[2] = this.z;
-
-        return this._shaderData;
     }
 
     /**

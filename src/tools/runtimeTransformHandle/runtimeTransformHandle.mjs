@@ -42,8 +42,8 @@ import { MultiSelector } from "../../tools/selector/multiSelector.mjs";
 /**
  * RTH-回调表
  * @typedef {object} RTHEventsMap
- * @property {(selectedNodes: pc.Entity[]): any} select
- * @property {(selectedNodes: pc.Entity[]): any} focus
+ * @property {(selectedNodes: pc.Entity[]) => any} select
+ * @property {(selectedNodes: pc.Entity[]) => any} focus
  */
 //@tool("RuntimeTransformHandle")
 export class RuntimeTransformHandle extends pc.EventHandler {
@@ -65,26 +65,10 @@ export class RuntimeTransformHandle extends pc.EventHandler {
         return pc.Application.getApplication();
     }
     // 物体实例
-    /**
-     * @private
-     * @type {pc.Entity}
-     */
-    transformHandle;
-    /**
-     * @private
-     * @type {pc.Entity}
-     */
-    translationHandle;
-    /**
-     * @private
-     * @type {pc.Entity}
-     */
-    rotationHandle;
-    /**
-     * @private
-     * @type {pc.Entity}
-     */
-    scaleHandle;
+    transformHandle   = new pc.Entity("transformHandle");
+    translationHandle = generateTranslationHandle();
+    rotationHandle    = generateRotatioHandle();
+    scaleHandle       = generateScaleHandle();
     /**
      * @private
      * @type {pc.Entity}
@@ -178,13 +162,13 @@ export class RuntimeTransformHandle extends pc.EventHandler {
     handleType   /*: HandleType */ = HandleType.Translation;
     pivotType    /*: PivotType  */ = PivotType.World;
     _selectedType/*: SelectType */ ;
-    get selectedType()
-    {
+    get selectedType() {
         return this._selectedType;
     }
-    set selectedType(value)
-    {
-        if (this._selectedType === value) { return; }
+    set selectedType(value) {
+        if (this._selectedType === value) {
+            return;
+        }
         value === SelectType.AxisX || value === SelectType.AllAxis ? axisXMat.emissive.copy(pc.Color.WHITE) : axisXMat.emissive.copy(pc.Color.RED);
         value === SelectType.AxisY || value === SelectType.AllAxis ? axisYMat.emissive.copy(pc.Color.WHITE) : axisYMat.emissive.copy(pc.Color.GREEN);
         value === SelectType.AxisZ || value === SelectType.AllAxis ? axisZMat.emissive.copy(pc.Color.WHITE) : axisZMat.emissive.copy(pc.Color.BLUE);
@@ -218,10 +202,6 @@ export class RuntimeTransformHandle extends pc.EventHandler {
         };
         //this.setOptions(options);
         // 创建handle
-        this.transformHandle = new pc.Entity("transformHandle");
-        this.translationHandle = generateTranslationHandle();
-        this.rotationHandle = generateRotatioHandle();
-        this.scaleHandle = generateScaleHandle();
         this.transformHandle.addChild(this.translationHandle);
         this.transformHandle.addChild(this.rotationHandle);
         this.transformHandle.addChild(this.scaleHandle);
@@ -930,7 +910,6 @@ export class RuntimeTransformHandle extends pc.EventHandler {
      * @param {{ x: number, y: number }} event 事件
      */
     onControlDown(event) {
-        console.log("onControlDown", event);
         if (this.selectedType == null) {
             return;
         }
@@ -1041,7 +1020,6 @@ export class RuntimeTransformHandle extends pc.EventHandler {
      * @param {{ x: number, y: number, dx: number, dy: number }} event 事件
      */
     onControlMove(event) {
-        console.log("onControlMove", event);
         if (!this.isDragging || this.trackEntities.length <= 0) {
             return;
         }
