@@ -1,13 +1,15 @@
 import * as pc from 'playcanvas';
-/*
-gizmo = new RuntimeTransformHandle(app);
-gizmo.orbitCamera.focus(app.root.children[0]);
-gizmo.transformHandle.enabled = true;
-gizmo.orbitCamera.yaw = -60;
-gizmo.orbitCamera.distance = 20;
-gizmo.select(app.root.children[0]);
-gizmo.orbitCamera.device = "mouse";
-*/
+import { RuntimeTransformHandle } from './src/tools/runtimeTransformHandle/runtimeTransformHandle.mjs';
+function addGizmo() {
+  const gizmo = new RuntimeTransformHandle(app);
+  gizmo.orbitCamera.focus(app.root.children[0]);
+  gizmo.transformHandle.enabled = true;
+  gizmo.orbitCamera.yaw = -60;
+  gizmo.orbitCamera.distance = 20;
+  gizmo.select(app.root.children[0]);
+  gizmo.orbitCamera.device = "mouse";
+  return gizmo;
+}
 // create a PlayCanvas application
 const canvas = document.getElementById('application');
 const mouse = new pc.Mouse(canvas);
@@ -22,11 +24,25 @@ app.setCanvasResolution(pc.RESOLUTION_AUTO);
 // ensure canvas is resized when window changes size
 window.addEventListener('resize', () => app.resizeCanvas());
 // create box entity
-const box = new pc.Entity('cube');
-box.addComponent('model', {
-    type: 'box'
+const cube0 = new pc.Entity('cube0');
+cube0.addComponent('model', {
+  type: 'box',
 });
-app.root.addChild(box);
+app.root.addChild(cube0);
+// create box entity
+const cube1 = new pc.Entity('cube1');
+cube1.addComponent('model', {
+  type: 'box',
+});
+cube1.translate(0, 1, 0);
+app.root.addChild(cube1);
+// create box entity
+const cube2 = new pc.Entity('cube2');
+cube2.addComponent('model', {
+  type: 'box',
+});
+cube2.translate(0, -1, 0);
+app.root.addChild(cube2);
 // create camera entity
 const camera = new pc.Entity('camera');
 camera.addComponent('camera', {
@@ -42,6 +58,11 @@ light.setEulerAngles(45, 0, 0);
 // rotate the box according to the delta time since the last frame
 //app.on('update', dt => box.rotate(10 * dt, 20 * dt, 30 * dt));
 app.start();
+const gizmo = addGizmo();
 Object.assign(window, {
   app,
+  gizmo,
+  cube0,
+  cube1,
+  cube2,
 });
