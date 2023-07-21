@@ -257,7 +257,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
         const toolOptions = this.toolOptions;
         // 使用描边相机，用于选中模型时的高亮显示
         this.outLineCamera = new OutlineCamera({
-            mainCamra: toolOptions.mainCamera,
+            mainCamera: toolOptions.mainCamera,
             outlineColor: this.outLineColor
         });
         // 使用grid
@@ -279,7 +279,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
             };
             // 使用观测相机，实现基本视角操作
             this.orbitCamera = new OrbitCamera({
-                mainCamra: toolOptions.mainCamera,
+                mainCamera: toolOptions.mainCamera,
                 device: this.app.touch ? "touchScreen" : "mouse",
                 rotateCondition,
             });
@@ -382,7 +382,9 @@ export class RuntimeTransformHandle extends pc.EventHandler {
         }
         const toolOptions = this.toolOptions;
         // 关闭先前选中模型的描边特效
-        this.trackEntities.forEach(entity => { toolOptions.showOutline && this.outLineCamera.toggleOutLine(entity, false); });
+        this.trackEntities.forEach(entity => {
+            toolOptions.showOutline && this.outLineCamera.toggleOutLine(entity, false);
+        });
         if (target == null || (Array.isArray(target) && target.length <= 0)) {
             this.trackEntities = [];
             this.transformHandle.enabled = false;
@@ -1014,10 +1016,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
             }
         }
         this.isDragging = true;
-        this.outLineCamera.updateOptions({
-            // mainCamera: camera, // ignored anyway
-            outlineColor: pc.Color.WHITE,
-        });
+        this.outLineCamera.outlineColor = pc.Color.WHITE;
     }
     /**
      * 鼠标或触屏移动时触发的事件
@@ -1048,10 +1047,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
         if (!this.isDragging) {
             return;
         }
-        this.outLineCamera.updateOptions({
-            //mainCamra: this.toolOptions.mainCamera,
-            outlineColor: this.outLineColor
-        });
+        this.outLineCamera.outlineColor = this.outLineColor;
         this.isDragging = false;
         this.selectedType = null;
     }

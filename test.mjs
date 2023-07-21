@@ -60,6 +60,7 @@ light.setEulerAngles(45, 0, 0);
 app.start();
 const gizmo = addGizmo();
 Object.assign(window, {
+  pc,
   app,
   gizmo,
   cube0,

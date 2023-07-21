@@ -67,8 +67,7 @@ export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions,
      * 创建模型点选器
      * @param {SelectorOptions} options 模型点选设置
      */
-    constructor(options)
-    {
+    constructor(options) {
         super();
         this.toolOptions = {
             ...this.toolOptionsDefault,
@@ -83,8 +82,7 @@ export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions,
      * @override
      * @param {SelectorOptions} option 模型点选设置
      */
-    setOptions(options)
-    {
+    setOptions(options) {
         // this.toolOptions.inputHandler = this.toolOptions.inputHandler || use("MouseInputer");
         this.pickLayers = this.toolOptions.excludeLayers
             ? this.app.scene.layers.layerList.filter((layer/*: pc.Layer*/) => !this.toolOptions.excludeLayers.includes(layer))

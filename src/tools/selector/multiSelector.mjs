@@ -152,8 +152,7 @@ export class MultiSelector extends pc.EventHandler /*extends Tool<MultiSelectorO
             return false;
         }
         let isEqual = true;
-        arr1.forEach(e1 =>
-        {
+        arr1.forEach(e1 => {
             if (!arr2.includes(e1)) {
                 isEqual = false;
             }
@@ -177,9 +176,18 @@ export class MultiSelector extends pc.EventHandler /*extends Tool<MultiSelectorO
      * @returns 
      */
     onDragging(event) {
-        const options = this.toolOptions;
-        if (!this.isSelecting || options.expectCondition && options.expectCondition()) { return; }
-        this.pickRect.copy(drawSelectionBox({ x: event.ox, y: event.oy }, { x: event.x, y: event.y }, options.boxLayer));
+        const { expectCondition, boxLayer } = this.toolOptions;
+        if (!this.isSelecting || expectCondition && expectCondition()) {
+            return;
+        }
+        const selectionBox = drawSelectionBox(
+            event.ox,
+            event.oy,
+            event.x,
+            event.y,
+            boxLayer
+        );
+        this.pickRect.copy(selectionBox);
         this.pick(this.pickRect);
     }
     /**
@@ -192,13 +200,13 @@ export class MultiSelector extends pc.EventHandler /*extends Tool<MultiSelectorO
         this.fire("selectEnd");
     }
     onEnable() {
-        const inputHandler = this.toolOptions.inputHandler;
+        const { inputHandler } = this.toolOptions;
         inputHandler.on("down", this.onControlDown, this);
         inputHandler.on("dragging", this.onDragging, this);
         inputHandler.on("dragEnd", this.onDragEnd, this);
     }
     onDisable() {
-        const inputHandler = this.toolOptions.inputHandler;
+        const { inputHandler } = this.toolOptions;
         inputHandler.off("down", this.onControlDown, this);
         inputHandler.off("dragging", this.onDragging, this);
         inputHandler.off("dragEnd", this.onDragEnd, this);

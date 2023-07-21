@@ -104,19 +104,21 @@ export class OutlineCamera {
     /**
     * 初始化后期特效
     * @param {object} [option] 描边设置
-    * @param {pc.Color} option.color 描边颜色
-    * @param {number} option.thickness 描边粗细
+    * @param {pc.Color} [option.color] 描边颜色
+    * @param {number} [option.thickness] 描边粗细
     */
     initEffect(option) {
         // 创建并添加描边layer
-        if (this.outlineLayer == undefined) {
-            let outlineLayer = new pc.Layer({ name: this.toolOptions.outlineLayerName });
+        if (!this.outlineLayer) {
+            const outlineLayer = new pc.Layer({
+                name: this.toolOptions.outlineLayerName,
+            });
             this.app.scene.layers.insert(outlineLayer, 0); // 将outlineLayer最先渲染
             this.outlineLayer = outlineLayer;
         }
         this.outlineLayer.renderTarget = this.createRenderTarget(); // 给layer添加renderTarget;
         // 创建并添加描边相机
-        if (this.outlineCamera == undefined) {
+        if (!this.outlineCamera) {
             const outlineCameraEntity = new pc.Entity('outlineCameraEntity');
             const outlineCamera = outlineCameraEntity.addComponent("camera", {
                 clearColor: new pc.Color(0.0, 0.0, 0.0, 0.0), // 透明背景色
@@ -128,26 +130,38 @@ export class OutlineCamera {
             // todo: update loop
             //this.outlineCamera.fov           = this.toolOptions.mainCamera.fov;
             //this.outlineCamera.horizontalFov = this.toolOptions.mainCamera.horizontalFov;
+            CameraComponent_EX.prototype.follow.bind(
+                this.outlineCamera,
+                this.toolOptions.mainCamera,
+            )
         }
         // 创建描边特效并添加至相机
-        this.outlineEffect && this.toolOptions.mainCamera.postEffects.removeEffect(this.outlineEffect); // 先清空特效
+        if (this.outlineEffect) {
+            console.log("OutlineCamera#initEffect> remove effect", this.outlineEffect);
+            this.toolOptions.mainCamera.postEffects.removeEffect(this.outlineEffect); // 先清空特效
+        }
         // 若传入了设置，则重新生成特效；若不传入设置，不重新生成，仅重置特效
         if (option) {
             this.outlineEffect = new PostEffectOutline(this.app.graphicsDevice, {
                 outlineLayer: this.outlineLayer,
                 color: option.color,
-                thickness: option.thickness
+                thickness: option.thickness,
             });
         } else {
             this.outlineEffect.refresh();
         }
         this.toolOptions.mainCamera.postEffects.addEffect(this.outlineEffect); // 添加特效至相机
-        CameraComponent_EX.prototype.follow.bind(
-            this.outlineCamera,
-            this.toolOptions.mainCamera,
-        )
         // CameraComponent_EX#follow(), it's just for following fov/horizontalFov
         //this.outlineCamera.follow(this.toolOptions.mainCamera); // 同步相机
+    }
+    /**
+     * @type {pc.Color}
+     * @param {pc.Color} newColor
+     */
+    set outlineColor(newColor) {
+        this.initEffect({
+            color: newColor,
+        });
     }
     /**
     * 创建大小为整个屏幕的renderTarget（用于后期）

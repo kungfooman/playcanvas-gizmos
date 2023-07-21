@@ -17,7 +17,7 @@ import * as pc from "playcanvas";
 /**
  * 观测相机选项
  * @typedef {Object} OrbitCameraOptions
- * @property {pc.CameraComponent} [mainCamra]
+ * @property {pc.CameraComponent} [mainCamera]
  * @property {AvailableDevices} [device]
  * @property {number} [orbitSensitivity]
  * @property {number} [distanceSensitivity]
@@ -42,7 +42,7 @@ export class OrbitCamera {
     // 默认选项
     /** @type {OrbitCameraOptions} */
     toolOptionsDefault = {
-        mainCamra: this.app.systems.camera.cameras[0],
+        mainCamera: this.app.systems.camera.cameras[0],
         device: this.app.touch ? "touchScreen" : "mouse",
         orbitSensitivity: 0.25,
         distanceSensitivity: 1.5,
@@ -54,7 +54,7 @@ export class OrbitCamera {
         rotateCondition: null,
         distanceCondition: null,
         panCondition: null,
-        lookCondition: null
+        lookCondition: null,
     }
     get app() {
         return pc.Application.getApplication();
@@ -88,14 +88,13 @@ export class OrbitCamera {
         this.quatWithoutYaw = new pc.Quat();
         this.modelsAABB = new pc.BoundingBox();
         this.cameraForward = new pc.Vec3();
-        const cameraQuat = this.toolOptions.mainCamra.entity.getRotation();
+        const cameraQuat = this.toolOptions.mainCamera.entity.getRotation();
         this._yaw = this.calcYaw(cameraQuat);
         this._pitch = this.calcPitch(cameraQuat, this._yaw);
-        this.toolOptions.mainCamra.entity.setLocalEulerAngles(this._pitch, this._yaw, 0);
+        this.toolOptions.mainCamera.entity.setLocalEulerAngles(this._pitch, this._yaw, 0);
         this.targetYaw = this._yaw;
         this.targetPitch = this._pitch;
-        this.targetDistance = this._distance = this.toolOptions.mainCamra.entity.getPosition().length();
-        console.log("orbit cam", this);
+        this.targetDistance = this._distance = this.toolOptions.mainCamera.entity.getPosition().length();
         this.checkAspectRatio();
         if (this.toolOptions.device === 'mouse') {
             this.addMouse();
@@ -188,7 +187,7 @@ export class OrbitCamera {
         this.buildAABB(entity, 0);
         var halfExtents = this.modelsAABB.halfExtents;
         var distance = Math.max(halfExtents.x, Math.max(halfExtents.y, halfExtents.z));
-        distance = (distance / Math.tan(0.5 * this.toolOptions.mainCamra.fov * pc.math.DEG_TO_RAD));
+        distance = (distance / Math.tan(0.5 * this.toolOptions.mainCamera.fov * pc.math.DEG_TO_RAD));
         distance = (distance * 2);
         this.targetDistance = distance;
         this.removeInertia();
@@ -217,7 +216,7 @@ export class OrbitCamera {
      * 更新相机位置
      */
     updatePosition() {
-        const cameraEntity = this.toolOptions.mainCamra.entity;
+        const cameraEntity = this.toolOptions.mainCamera.entity;
         cameraEntity.setLocalEulerAngles(this._pitch, this._yaw, 0);
         const position = cameraEntity.getPosition();
         if (this.isLooking) {
@@ -234,7 +233,7 @@ export class OrbitCamera {
     checkAspectRatio() {
         var height = this.app.graphicsDevice.height;
         var width = this.app.graphicsDevice.width;
-        this.toolOptions.mainCamra.horizontalFov = height > width;
+        this.toolOptions.mainCamera.horizontalFov = height > width;
     }
     /**
      * 清除缓动
@@ -462,7 +461,7 @@ export class OrbitCameraInput_Mouse {
      */
     pan(event) {
         const orbitCamera = this.toolOptions.orbitCamera;
-        const camera = orbitCamera.toolOptions.mainCamra;
+        const camera = orbitCamera.toolOptions.mainCamera;
         camera.screenToWorld(event.x, event.y, orbitCamera.distance, this.fromWorldPoint);
         camera.screenToWorld(this.lastPoint.x, this.lastPoint.y, orbitCamera.distance, this.toWorldPoint);
         this.worldDiff.sub2(this.toWorldPoint, this.fromWorldPoint);
@@ -563,7 +562,7 @@ export class OrbitCameraInput_TouchScreen {
         const fromWorldPoint = this.fromWorldPoint;
         const toWorldPoint = this.toWorldPoint;
         const worldDiff = this.worldDiff;
-        const camera = orbitCamera.toolOptions.mainCamra;
+        const camera = orbitCamera.toolOptions.mainCamera;
         const distance = orbitCamera.distance;
         camera.screenToWorld(midPoint.x, midPoint.y, distance, fromWorldPoint);
         camera.screenToWorld(this.lastPinchMidPoint.x, this.lastPinchMidPoint.y, distance, toWorldPoint);
