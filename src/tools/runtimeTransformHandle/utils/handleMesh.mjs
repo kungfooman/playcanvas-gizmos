@@ -10,7 +10,7 @@ import {
     axisXMat, axisYMat, axisZMat, halfTransMat, planeEdgeXMat, planeEdgeYMat, planeEdgeZMat,
     planXMat, planYMat, planZMat, transparentMat
 } from "./handleShader.mjs";
-import MeshRaycaster from "./meshRaycaster.mjs";
+import { MeshRaycaster } from "./meshRaycaster.mjs";
 // 选中类别
 export const SelectType = {
     AxisX: "AxisX",
@@ -141,7 +141,7 @@ function generateTranslationAxis(axis) {
     const mesh = combineMesh([headMesh, tailMesh]);
     const mat = axisMaterialMap[axis];
     const mi = new pc.MeshInstance(mesh, mat);
-    const axisEntity = new pc.Entity();
+    const axisEntity = new pc.Entity('axisEntity');
     axisEntity.addComponent("render", {
         meshInstances: [mi]
     });
@@ -187,7 +187,7 @@ function generateTranslationAxis(axis) {
     edge2Entity.render.layers = [RTHLayer().id];
     HandleMap[planeEntity._guid] = getSelectPlane(axis);
     MeshRaycaster.addMeshInstances(planeMI);
-    const combineEntity = new pc.Entity();
+    const combineEntity = new pc.Entity('combineEntity');
     combineEntity.addChild(axisEntity);
     combineEntity.addChild(collisionEntity);
     combineEntity.addChild(planeEntity);
@@ -214,7 +214,7 @@ function generateRotationAxis(axis) {
     handleMesh.getPositions(meshPositions);
     handleMesh.getIndices(meshIndices);
     const handleMeshInstance = new pc.MeshInstance(handleMesh, axisMaterialMap[axis]);
-    const handleEntity = new pc.Entity();
+    const handleEntity = new pc.Entity('handleEntity');
     handleEntity.addComponent("render", {
         meshInstances: [handleMeshInstance]
     });
@@ -231,7 +231,7 @@ function generateRotationAxis(axis) {
     collisionEntity.render.layers = [RTHLayer().id];
     HandleMap[collisionEntity._guid] = getSelectAxis(axis);
     MeshRaycaster.addMeshInstances(collisionMI);
-    const combineEntity = new pc.Entity();
+    const combineEntity = new pc.Entity('generateRotationAxis-combineEntity');
     combineEntity.addChild(handleEntity);
     combineEntity.addChild(collisionEntity);
     return combineEntity;
@@ -244,32 +244,39 @@ function generateRotationAxis(axis) {
 function generateScaleAxis(axis) {
     const app = pc.Application.getApplication();
     const device = app.graphicsDevice;
-    const headMesh = pc.createBox(device, { halfExtents: new pc.Vec3(0.6, 0.6, 0.6) });
-    const tailMesh = pc.createCylinder(device, { radius: 0.05, height: 8 });
+    const headMesh = pc.createBox(device, {
+        halfExtents: new pc.Vec3(0.6, 0.6, 0.6),
+    });
+    const tailMesh = pc.createCylinder(device, {
+        radius: 0.05,
+        height: 8,
+    });
     const transformMat = axisRotationMat[axis];
     transformMeshPoint(headMesh, [new pc.Vec3(0, 9.4, 0), transformMat]);
     transformMeshPoint(tailMesh, [new pc.Vec3(0, 4.8, 0), transformMat]);
     const mesh = combineMesh([headMesh, tailMesh]);
     const mat = axisMaterialMap[axis];
     const mi = new pc.MeshInstance(mesh, mat);
-    const axisEntity = new pc.Entity();
+    const axisEntity = new pc.Entity('generateScaleAxis-axisEntity');
     axisEntity.addComponent("render", {
         meshInstances: [mi]
     });
     mi.cull = false;
     axisEntity.render.layers = [RTHLayer().id];
-    const collisionMesh = pc.createBox(device, { halfExtents: new pc.Vec3(0.6, 4.6, 0.6) });
+    const collisionMesh = pc.createBox(device, {
+        halfExtents: new pc.Vec3(0.6, 4.6, 0.6),
+    });
     transformMeshPoint(collisionMesh, [new pc.Vec3(0, 5.4, 0), transformMat]);
     const collisionMI = new pc.MeshInstance(collisionMesh, transparentMat);
     const collisionEntity = new pc.Entity(`scaleCollision_${axis}`);
     collisionEntity.addComponent("render", {
-        meshInstances: [collisionMI]
+        meshInstances: [collisionMI],
     });
     collisionMI.cull = false;
     collisionEntity.render.layers = [RTHLayer().id];
     HandleMap[collisionEntity._guid] = getSelectAxis(axis);
     MeshRaycaster.addMeshInstances(collisionMI);
-    const combineEntity = new pc.Entity();
+    const combineEntity = new pc.Entity('generateScaleAxis-combineEntity');
     combineEntity.addChild(axisEntity);
     combineEntity.addChild(collisionEntity);
     return combineEntity;
@@ -285,7 +292,7 @@ function generateScaleCenter() {
     });
     const mat = halfTransMat;
     const mi = new pc.MeshInstance(mesh, mat);
-    const entity = new pc.Entity();
+    const entity = new pc.Entity('generateScaleCenter');
     entity.addComponent("render", {
         meshInstances: [mi],
     });
@@ -314,12 +321,11 @@ function transformMeshPoint(mesh, transforms) {
         transforms.forEach(transform => {
             if (transform instanceof pc.Vec3) {
                 tempPoint.add(transform);
-            }
-            else if (transform instanceof pc.Mat4) {
+            } else if (transform instanceof pc.Mat4) {
                 transform.transformPoint(tempPoint, tempPoint);
             }
         });
-        positions[i] = tempPoint.x;
+        positions[i    ] = tempPoint.x;
         positions[i + 1] = tempPoint.y;
         positions[i + 2] = tempPoint.z;
     }

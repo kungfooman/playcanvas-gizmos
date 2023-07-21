@@ -6,10 +6,10 @@
  * 详情: Runtime Transform Handle
  */
 import * as pc from "playcanvas";
-import { OrbitCamera } from "../camera/orbitCamera.mjs";
-import { OutlineCamera } from "../camera/outlineCamera.mjs";
+import { OrbitCamera           } from "../camera/orbitCamera.mjs";
+import { OutlineCamera         } from "../camera/outlineCamera.mjs";
 import { HandleType, PivotType } from "./common/enum.mjs";
-import { RTH_RuntimeGrid } from "./features/runtimeGrid.mjs";
+import { RTH_RuntimeGrid       } from "./features/runtimeGrid.mjs";
 import {
     Axis, generateRotatioHandle, generateScaleHandle, generateTranslationHandle, HandleMap,
     RTHLayer, SelectType
@@ -18,13 +18,14 @@ import {
     axisXMat, axisYMat, axisZMat, halfTransMat, planeEdgeXMat, planeEdgeYMat, planeEdgeZMat,
     planXMat, planYMat, planZMat
 } from "./utils/handleShader.mjs";
-import MeshRaycaster from "./utils/meshRaycaster.mjs";
-import Recorder, { Record } from "./utils/recorder.mjs";
-import { MouseInputer } from "../../tools/input/mouseInput.mjs";
+import { MeshRaycaster       } from "./utils/meshRaycaster.mjs";
+import { Record              } from "./utils/record.mjs";
+import { Recorder            } from "./utils/recorder.mjs";
+import { MouseInputer        } from "../../tools/input/mouseInput.mjs";
 import { RTH_KeyboardInputer } from './input/keyboardInput.mjs';
-import { CustomPlane } from './CustomPlane.mjs';
-import { Selector } from "../../tools/selector/selector.mjs";
-import { MultiSelector } from "../../tools/selector/multiSelector.mjs";
+import { CustomPlane         } from './CustomPlane.mjs';
+import { Selector            } from "../../tools/selector/selector.mjs";
+import { MultiSelector       } from "../../tools/selector/multiSelector.mjs";
 /**
  * RTH选项
  * @typedef {Object} RTHOptions
@@ -1013,7 +1014,10 @@ export class RuntimeTransformHandle extends pc.EventHandler {
             }
         }
         this.isDragging = true;
-        this.outLineCamera.updateOptions({ mainCamra: camera, outlineColor: pc.Color.WHITE });
+        this.outLineCamera.updateOptions({
+            // mainCamera: camera, // ignored anyway
+            outlineColor: pc.Color.WHITE,
+        });
     }
     /**
      * 鼠标或触屏移动时触发的事件
@@ -1045,7 +1049,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
             return;
         }
         this.outLineCamera.updateOptions({
-            mainCamra: this.toolOptions.mainCamera,
+            //mainCamra: this.toolOptions.mainCamera,
             outlineColor: this.outLineColor
         });
         this.isDragging = false;

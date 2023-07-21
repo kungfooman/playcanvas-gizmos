@@ -5,20 +5,15 @@
  * 修改时间: 2022-08-09 16:48:24
  * 详情: 点选模型
  */
-
 import * as pc from "playcanvas";
-
 // import type { InputEventsMap } from "../utils/common/InputEventsMap";
-
 /**
  * 模型点选事件-回调表
  */
-
 /**
  * @typedef {Object} SelectorEventsMap
  * @property {(selectedNode: pc.GraphNode, preSelectedNode: pc.GraphNode) => any} select
  */
-
 /**
  * 模型点选选项
  */
@@ -34,7 +29,6 @@ import * as pc from "playcanvas";
  * @property {function} [pickCondition]
  * @property {pc.Layer[]} [excludeLayers]
  */
-
 //@tool("Selector")
 export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions, SelectorEventsMap>*/
 {
@@ -69,7 +63,6 @@ export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions,
      * @type {pc.GraphNode}
      */
     preSelectedNode;
-
     /**
      * 创建模型点选器
      * @param {SelectorOptions} options 模型点选设置
@@ -81,11 +74,10 @@ export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions,
             ...this.toolOptionsDefault,
             ...options,
         };
-
         this.picker = new pc.Picker(this.app, 0, 0);
         this.setOptions(options);
+        this.onEnable();
     }
-
     /**
      * 设置模型点选器
      * @override
@@ -98,7 +90,6 @@ export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions,
             ? this.app.scene.layers.layerList.filter((layer/*: pc.Layer*/) => !this.toolOptions.excludeLayers.includes(layer))
             : this.app.scene.layers.layerList;
     }
-
     /**
      * 点选模型
      * @param {object} event 输入事件
@@ -113,30 +104,25 @@ export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions,
         const canvas = this.app.graphicsDevice.canvas;
         const canvasWidth = canvas.clientWidth;
         const canvasHeight = canvas.clientHeight;
-
         this.picker.resize(canvasWidth * options.pickAreaScale, canvasHeight * options.pickAreaScale);
         this.picker.prepare(options.pickCamera, this.app.scene, this.pickLayers);
         const selected = this.picker.getSelection(event.x * options.pickAreaScale, event.y * options.pickAreaScale);
-
         if (selected.length > 0 && selected[0]?.node) {
             if (!options.pickTag || options.pickTag.length <= 0) {
                 if (!options.pickSame && this.preSelectedNode == selected[0].node) { return; }
                 this.fire("select", selected[0].node, this.preSelectedNode);
                 this.preSelectedNode = selected[0].node;
-            }
-            else {
+            } else {
                 const selectedNode = this.getModelHasTag(selected[0].node, options.pickTag);
                 if (!options.pickSame && this.preSelectedNode == selectedNode) { return; }
                 this.fire("select", selectedNode, this.preSelectedNode);
                 this.preSelectedNode = selectedNode;
             }
-        }
-        else if (options.pickNull) {
+        } else if (options.pickNull) {
             this.fire("select", null, this.preSelectedNode);
             this.preSelectedNode = null;
         }
     }
-
     /**
      * 从下至上找到含有某个标签的模型对象
      * @param {pc.GraphNode} model 模型
@@ -150,16 +136,13 @@ export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions,
         }
         return node;
     }
-
     onEnable() {
         if (this.toolOptions.downSelect) {
             this.toolOptions.inputHandler.on("down", this.pick, this);
-        }
-        else {
+        } else {
             this.toolOptions.inputHandler.on("click", this.pick, this);
         }
     }
-
     onDisable() {
         this.toolOptions.inputHandler.off("down", this.pick, this);
         this.toolOptions.inputHandler.off("click", this.pick, this);

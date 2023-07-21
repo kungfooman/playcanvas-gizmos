@@ -43,7 +43,7 @@ export class MultiSelector extends pc.EventHandler /*extends Tool<MultiSelectorO
         pickAreaScale: 0.25,
         boxLayer: this.app.scene.layers.getLayerByName("UI"),
         excludeLayers: [this.app.scene.layers.getLayerByName("UI")],
-        expectCondition: null
+        expectCondition: null,
     };
     get app() {
         return pc.Application.getApplication();
@@ -52,8 +52,7 @@ export class MultiSelector extends pc.EventHandler /*extends Tool<MultiSelectorO
     picker;
     /** @type {pc.Layer[]} */
     pickLayers;
-    /** @type {pc.Vec4} */
-    pickRect;
+    pickRect = new pc.Vec4();
     isSelecting = false;
     /** @type {pc.GraphNode[]} */
     pickNodes = [];
@@ -67,18 +66,16 @@ export class MultiSelector extends pc.EventHandler /*extends Tool<MultiSelectorO
             ...options,
         };
         this.picker = new pc.Picker(this.app, 0, 0);
-        this.pickRect = new pc.Vec4();
+        this.publicsetOptions();
         this.onEnable();
     }
     /**
      * 设置多选模型选项
-     * @param {MultiSelectorOptions} option 多选模型选项
+     * @param {MultiSelectorOptions} options 多选模型选项
      */
-    publicsetOptions(options)
-    {
-        super.setOptions(options);
+    publicsetOptions(options) {
         this.pickLayers = this.toolOptions.excludeLayers
-            ? this.app.scene.layers.layerList.filter((layer/*: pc.Layer*/) => !this.toolOptions.excludeLayers.includes(layer))
+            ? this.app.scene.layers.layerList.filter(layer => !this.toolOptions.excludeLayers.includes(layer))
             : this.app.scene.layers.layerList;
     }
     /**
