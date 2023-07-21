@@ -5,19 +5,13 @@
  * 修改时间: 2022-07-22 10:49:42
  * 详情: 键盘快捷键
  */
-
 import * as pc from "playcanvas";
-
 import { HandleType } from "../common/enum.mjs";
-
 /**
  * @typedef {number} KeyCode
  */
-
 /**
  * 键盘快捷键选项
- */
-/**
  * An object with keycode's mapped to respective functions.
  * @typedef {object} KeyboardInputOptions
  * @property {KeyCode} translateKey - keycode for the translate function
@@ -29,7 +23,6 @@ import { HandleType } from "../common/enum.mjs";
  * @property {KeyCode} undoKey - keycode for the undo function
  * @property {KeyCode} redoKey - keycode for the redo function
  */
-
 /**
  * 键盘快捷键-回调表
  */
@@ -41,12 +34,12 @@ import { HandleType } from "../common/enum.mjs";
  * @property {() => any} undo - Undoes the action
  * @property {() => any} redo - Redoes the action
  */
-
-//@tool("RTH_KeyboardInputer")
-export class RTH_KeyboardInputer extends Tool<KeyboardInputOptions, ShortcutEventsMap>
-{
-    // 默认选项
-    protected toolOptionsDefault: KeyboardInputOptions = {
+export class RTH_KeyboardInputer extends pc.EventHandler { // Tool<KeyboardInputOptions, ShortcutEventsMap>
+    /**
+     * 默认选项
+     * @type {KeyboardInputOptions}
+     */
+    toolOptionsDefault = {
         translateKey: pc.KEY_W,
         rotateKey: pc.KEY_E,
         scaleKey: pc.KEY_R,
@@ -54,18 +47,24 @@ export class RTH_KeyboardInputer extends Tool<KeyboardInputOptions, ShortcutEven
         pivotKey: pc.KEY_X,
         comboKey: pc.KEY_CONTROL,
         undoKey: pc.KEY_Z,
-        redoKey: pc.KEY_Y
+        redoKey: pc.KEY_Y,
     };
-
-    constructor(options?: KeyboardInputOptions)
-    {
+    /**
+     * 
+     * @param {KeyboardInputOptions} [options] 
+     */
+    constructor(options) {
         super();
-
-        this.setOptions(options);
+        this.toolOptions = {
+            ...this.toolOptionsDefault,
+            ...options,
+        };
+        this.onEnable();
     }
-
-    private onKeyDown(event: any): void
-    {
+    get app() {
+        return pc.Application.getApplication();
+    }
+    onKeyDown(event) {
         const toolOptions = this.toolOptions;
         switch (event.key) {
             case toolOptions.translateKey:
@@ -84,27 +83,26 @@ export class RTH_KeyboardInputer extends Tool<KeyboardInputOptions, ShortcutEven
                 this.fire("switchPivot");
                 break;
             case toolOptions.undoKey:
-                if (!this.app.keyboard.isPressed(toolOptions.comboKey)) { break; }
+                if (!this.app.keyboard.isPressed(toolOptions.comboKey)) {
+                    break;
+                }
                 this.fire("undo");
                 break;
             case toolOptions.redoKey:
-                if (!this.app.keyboard.isPressed(toolOptions.comboKey)) { break; }
+                if (!this.app.keyboard.isPressed(toolOptions.comboKey)) {
+                    break;
+                }
                 this.fire("redo");
                 break;
             default:
                 break;
         }
-
         event.event.preventDefault();
     }
-
-    protected override onEnable(): void
-    {
+    onEnable() {
         this.app.keyboard.on(pc.EVENT_KEYDOWN, this.onKeyDown, this);
     }
-
-    protected override onDisable(): void
-    {
+    onDisable() {
         this.app.keyboard.off(pc.EVENT_KEYDOWN, this.onKeyDown, this);
     }
 }

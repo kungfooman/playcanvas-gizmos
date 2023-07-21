@@ -37,9 +37,7 @@ export class MouseInputer extends pc.EventHandler //extends Tool<MouseInputOptio
             ...this.toolOptionsDefault,
             ...options,
         };
-        this.mouseDownVec = new pc.Vec2();
-        this.mouseMoveVec = new pc.Vec2();
-        this.mouseUpVec = new pc.Vec2();
+        this.onEnable();
     }
     /**
      * 
@@ -112,18 +110,12 @@ export class MouseInputer extends pc.EventHandler //extends Tool<MouseInputOptio
             event: event.event,
         });
     }
-    /**
-     * @override
-     */
     onEnable() {
         this.app.mouse.on(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
         this.app.mouse.on(pc.EVENT_MOUSEWHEEL, this.onMouseWheel, this);
         this.app.mouse.on(pc.EVENT_MOUSEMOVE, this.onMouseMove, this);
         this.app.mouse.on(pc.EVENT_MOUSEUP, this.onMouseUp, this);
     }
-    /**
-     * @override
-     */
     onDisable() {
         this.app.mouse.off(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
         this.app.mouse.off(pc.EVENT_MOUSEWHEEL, this.onMouseWheel, this);

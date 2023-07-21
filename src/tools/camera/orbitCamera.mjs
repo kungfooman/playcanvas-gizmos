@@ -5,48 +5,39 @@
  * 修改时间: 2022-08-09 14:02:01
  * 详情: 观测相机
  */
-
 import * as pc from "playcanvas";
-
 /**
  * 可用输入设备
+ * @typedef {("mouse"|"touchScreen")} AvailableDevices
  */
-//type AvailableDevices = "mouse" | "touchScreen";
 /**
  * 可用输入监听器
+ * @typedef {(OrbitCameraInput_Mouse | OrbitCameraInput_TouchScreen)} AvailableInputHandler
  */
-//type AvailableInputHandler = OrbitCameraInput_Mouse | OrbitCameraInput_TouchScreen;
-///**
-// * 观测相机选项
-// *//*
-//export interface OrbitCameraOptions
-//{
-//    mainCamra?: pc.CameraComponent;
-//    device?: AvailableDevices;
-//    orbitSensitivity?/*: number*/;
-//    distanceSensitivity?/*: number*/;
-//    inertiaFactor?/*: number*/;
-//    pitchMin?/*: number*/;
-//    pitchMax?/*: number*/;
-//    distanceMin?/*: number*/;
-//    distanceMax?/*: number*/;
-//    rotateCondition?: () => boolean;
-//    distanceCondition?: () => boolean;
-//    panCondition?: () => boolean;
-//    lookCondition?: () => boolean;
-//};
-//*/
-///**
-// * 观测相机操作选项
-// *//*
-//export interface OrbitCameraInputOption
-//{
-//    orbitCamera: OrbitCamera;
-//    orbitSensitivity?/*: number*/;
-//    distanceSensitivity?/*: number*/;
-//};
-//*/
-
+/**
+ * 观测相机选项
+ * @typedef {Object} OrbitCameraOptions
+ * @property {pc.CameraComponent} [mainCamra]
+ * @property {AvailableDevices} [device]
+ * @property {number} [orbitSensitivity]
+ * @property {number} [distanceSensitivity]
+ * @property {number} [inertiaFactor]
+ * @property {number} [pitchMin]
+ * @property {number} [pitchMax]
+ * @property {number} [distanceMin]
+ * @property {number} [distanceMax]
+ * @property {() => boolean} [rotateCondition]
+ * @property {() => boolean} [distanceCondition]
+ * @property {() => boolean} [panCondition]
+ * @property {() => boolean} [lookCondition]
+ */
+/**
+ * 观测相机操作选项
+ * @typedef {Object} OrbitCameraInputOption
+ * @property {OrbitCamera} orbitCamera
+ * @property {number} [orbitSensitivity]
+ * @property {number} [distanceSensitivity]
+ */
 export class OrbitCamera {
     // 默认选项
     /** @type {OrbitCameraOptions} */
@@ -83,49 +74,47 @@ export class OrbitCamera {
     /** @type {pc.Quat} */ yawOffset;
     /** @type {pc.Quat} */ quatWithoutYaw;
     /** @type {pc.BoundingBox} */ modelsAABB;
-
     /**
      * 创建观测相机
      * @param {OrbitCameraOptions} [options] 观测相机选项
      */
-    constructor(options)
-    {
-
+    constructor(options) {
         this.toolOptions = {
             ...this.toolOptionsDefault,
             ...options,
         };
-
         this._pivotPoint = new pc.Vec3();
         this.yawOffset = new pc.Quat();
         this.quatWithoutYaw = new pc.Quat();
         this.modelsAABB = new pc.BoundingBox();
         this.cameraForward = new pc.Vec3();
-
         const cameraQuat = this.toolOptions.mainCamra.entity.getRotation();
         this._yaw = this.calcYaw(cameraQuat);
         this._pitch = this.calcPitch(cameraQuat, this._yaw);
         this.toolOptions.mainCamra.entity.setLocalEulerAngles(this._pitch, this._yaw, 0);
-
         this.targetYaw = this._yaw;
         this.targetPitch = this._pitch;
         this.targetDistance = this._distance = this.toolOptions.mainCamra.entity.getPosition().length();
         console.log("orbit cam", this);
         this.checkAspectRatio();
+        if (this.toolOptions.device === 'mouse') {
+            this.addMouse();
+        } else if (this.toolOptions.device === 'touchScreen') {
+            this.addTouchScreen();
+        } else {
+            console.warn("OrbitCamera> no device specified", this);
+        }
+        this.onEnable();
     }
-
     /**
      * 航向角
      * @type {number}
      */
-    get yaw()
-    {
+    get yaw() {
         return this.targetYaw;
     }
-    set yaw(value)
-    {
+    set yaw(value) {
         this.targetYaw = value;
-
         var diff = this.targetYaw - this._yaw;
         var reminder = diff % 360;
         if (reminder > 180) {
@@ -136,7 +125,6 @@ export class OrbitCamera {
             this.targetYaw = this._yaw + reminder;
         }
     }
-
     /**
      * 俯视角
      */
@@ -148,7 +136,6 @@ export class OrbitCamera {
     {
         this.targetPitch = pc.math.clamp(value, this.toolOptions.pitchMin, this.toolOptions.pitchMax);
     }
-
     /**
      * 离焦点的距离
      */
@@ -160,7 +147,6 @@ export class OrbitCamera {
     {
         this.targetDistance = pc.math.clamp(value, this.toolOptions.distanceMin, this.toolOptions.distanceMax);
     }
-
     /**
      * 焦点坐标
      */
@@ -172,127 +158,92 @@ export class OrbitCamera {
     {
         this._pivotPoint.copy(value);
     }
-
-    /**
-     * 输入设备
-     */
-    get device() // todo AvailableDevices
-    {
-        return this.toolOptions.device;
-    }
-    set device(value/*: AvailableDevices*/)
-    {
-        if (this.toolOptions.device === value) {
-            return;
-        }
-
+    addMouse() {
         if (this.inputHandler) {
-            this.inputHandler.enabled = false;
+            console.warn("Already got this.inputHandler");
+            return false;
         }
-
-        if (value === "mouse") {
-            this.inputHandler = new OrbitCameraInput_Mouse({
-                orbitCamera: this,
-                orbitSensitivity: this.toolOptions.orbitSensitivity,
-                distanceSensitivity: this.toolOptions.distanceSensitivity
-            });
-        }
-        else if (value === "touchScreen") {
-            this.inputHandler = new OrbitCameraInput_TouchScreen({
-                orbitCamera: this,
-                orbitSensitivity: this.toolOptions.orbitSensitivity,
-                distanceSensitivity: this.toolOptions.distanceSensitivity
-            });
-        }
-
-        this.toolOptions.device = value;
+        this.inputHandler = new OrbitCameraInput_Mouse({
+            orbitCamera: this,
+            orbitSensitivity: this.toolOptions.orbitSensitivity,
+            distanceSensitivity: this.toolOptions.distanceSensitivity
+        });
     }
-
+    addTouchScreen() {
+        if (this.inputHandler) {
+            console.warn("Already got this.inputHandler");
+            return false;
+        }
+        this.inputHandler = new OrbitCameraInput_TouchScreen({
+            orbitCamera: this,
+            orbitSensitivity: this.toolOptions.orbitSensitivity,
+            distanceSensitivity: this.toolOptions.distanceSensitivity
+        });
+    }
     /**
      * 聚焦
      * @param {pc.Entity | pc.Entity[]} entity 聚焦物体
      */
-    focus(entity)
-    {
+    focus(entity) {
         this.buildAABB(entity, 0);
-
         var halfExtents = this.modelsAABB.halfExtents;
-
         var distance = Math.max(halfExtents.x, Math.max(halfExtents.y, halfExtents.z));
         distance = (distance / Math.tan(0.5 * this.toolOptions.mainCamra.fov * pc.math.DEG_TO_RAD));
         distance = (distance * 2);
-
         this.targetDistance = distance;
-
         this.removeInertia();
-
         this.pivotPoint.copy(this.modelsAABB.center);
     }
-
     /**
      * 结束目标缓动
      */
-    stopInertia()
-    {
+    stopInertia() {
         this.targetYaw = this._yaw;
         this.targetPitch = this._pitch;
         this.targetDistance = this._distance;
     }
-
     /**
      * 更新相机
      * @param {number} dt 帧间隔
      */
-    update(dt)
-    {
+    update(dt) {
         const t = this.toolOptions.inertiaFactor === 0 ? 1 : Math.min(dt / this.toolOptions.inertiaFactor, 1);
         this._distance = pc.math.lerp(this._distance, this.targetDistance, t);
         this._yaw = pc.math.lerp(this._yaw, this.targetYaw, t);
         this._pitch = pc.math.lerp(this._pitch, this.targetPitch, t);
-
         this.updatePosition();
     }
-
     /**
      * 更新相机位置
      */
-    updatePosition() // todo void
-    {
+    updatePosition() {
         const cameraEntity = this.toolOptions.mainCamra.entity;
         cameraEntity.setLocalEulerAngles(this._pitch, this._yaw, 0);
-
         const position = cameraEntity.getPosition();
         if (this.isLooking) {
             this.pivotPoint.add2(position, this.cameraForward.copy(cameraEntity.forward).mulScalar(this._distance));
         }
-
         position.copy(cameraEntity.forward);
         position.mulScalar(-this._distance);
         position.add(this.pivotPoint);
         cameraEntity.setPosition(position);
     }
-
     /**
      * 根据宽高设置fov模式
      */
-    checkAspectRatio() // todo void
-    {
+    checkAspectRatio() {
         var height = this.app.graphicsDevice.height;
         var width = this.app.graphicsDevice.width;
-
         this.toolOptions.mainCamra.horizontalFov = height > width;
     }
-
     /**
      * 清除缓动
      */
-    removeInertia() // todo void
-    {
+    removeInertia() {
         this._yaw = this.targetYaw;
         this._pitch = this.targetPitch;
         this._distance = this.targetDistance;
     }
-
     /**
      * 构建AABB
      * @param {(pc.Entity | pc.GraphNode) | (pc.Entity | pc.GraphNode)[]} entity 选中模型
@@ -303,7 +254,6 @@ export class OrbitCamera {
         let i = 0, j = 0;
         /** @type {pc.MeshInstance[]} */
         let meshInstances;
-
         if (Array.isArray(entity)) {
             entity.forEach(e =>
             {
@@ -311,18 +261,15 @@ export class OrbitCamera {
             });
             return;
         }
-
         if (entity instanceof pc.Entity) {
             const allMeshInstances = [];
             const renders = entity.findComponents("render") /*as pc.RenderComponent[]*/;
-
             for (i = 0; i < renders.length; ++i) {
                 meshInstances = renders[i].meshInstances;
                 for (j = 0; j < meshInstances.length; j++) {
                     allMeshInstances.push(meshInstances[j]);
                 }
             }
-
             const models = entity.findComponents("model") /*as pc.ModelComponent[]*/;
             for (i = 0; i < models.length; ++i) {
                 meshInstances = models[i].meshInstances;
@@ -330,25 +277,20 @@ export class OrbitCamera {
                     allMeshInstances.push(meshInstances[j]);
                 }
             }
-
             for (i = 0; i < allMeshInstances.length; i++) {
                 if (modelsAdded === 0) {
                     this.modelsAABB.copy(allMeshInstances[i].aabb);
                 } else {
                     this.modelsAABB.add(allMeshInstances[i].aabb);
                 }
-
                 modelsAdded += 1;
             }
         }
-
         for (i = 0; i < entity.children.length; ++i) {
             modelsAdded += this.buildAABB(entity.children[i], modelsAdded);
         }
-
         return modelsAdded;
     }
-
     /**
      * 根据旋转获得航向角
      * @param {pc.Quat} quat 旋转
@@ -357,31 +299,23 @@ export class OrbitCamera {
     calcYaw(quat) {
         const transformedForward = new pc.Vec3();
         quat.transformVector(pc.Vec3.FORWARD, transformedForward);
-
         return Math.atan2(-transformedForward.x, -transformedForward.z) * pc.math.RAD_TO_DEG;
     }
-
     /**
      * 根据旋转和航向角获得俯视角
-     * @param quat 旋转
-     * @param yaw 航向角
-     * @returns 俯视角
+     * @param {pc.Quat} quat 旋转
+     * @param {number} yaw 航向角
+     * @returns {number} 俯视角
      */
-    calcPitch(quat/*: pc.Quat*/, yaw/*: number*/)/*: number*/
-    {
+    calcPitch(quat, yaw) {
         const quatWithoutYaw = this.quatWithoutYaw;
         const yawOffset = this.yawOffset;
-
         yawOffset.setFromEulerAngles(0, -yaw, 0);
         quatWithoutYaw.mul2(yawOffset, quat);
-
         const transformedForward = new pc.Vec3();
-
         quatWithoutYaw.transformVector(pc.Vec3.FORWARD, transformedForward);
-
         return Math.atan2(transformedForward.y, -transformedForward.z) * pc.math.RAD_TO_DEG;
     }
-
     onEnable() {
         if (this.device === "mouse") {
             this.inputHandler = new OrbitCameraInput_Mouse({
@@ -397,24 +331,17 @@ export class OrbitCamera {
                 distanceSensitivity: this.toolOptions.distanceSensitivity
             });
         }
-
         window.addEventListener("resize", this.checkAspectRatio.bind(this));
         this.app.on("update", this.update, this); // 开始刷新
         this.app.mouse.disableContextMenu(); // 禁止右键菜单
     }
-
     onDisable() {
-        if (this.inputHandler) {
-            this.inputHandler.enabled = false;
-        }
-
+        this.inputHandler?.onDisable();
         window.removeEventListener("resize", this.checkAspectRatio.bind(this));
         this.app.off("update", this.update, this); // 停止刷新
         this.app.mouse.enableContextMenu();  // 恢复右键菜单
     }
 }
-
-
 /**
  * 观测相机鼠标输入
  */
@@ -436,8 +363,7 @@ export class OrbitCameraInput_Mouse {
     /**
      * @param {OrbitCameraInputOption} options 
      */
-    constructor(options/*: */) {
-
+    constructor(options) {
         this.toolOptions = {
             ...this.toolOptionsDefault,
             ...options,
@@ -446,16 +372,18 @@ export class OrbitCameraInput_Mouse {
             console.error("鼠标设备不存在，请更改输入设备");
             return;
         }
+        console.log("NEW MOUSE");
+        this.onEnable();
     }
     get app() {
         return pc.Application.getApplication();
     }
     /**
      * 鼠标按下事件监听
-     * @param event 鼠标按下事件
+     * @param {globalThis.MouseEvent} event 鼠标按下事件
      */
-    onMouseDown(event/*: OrbitCameraInputOption*/)
-    {
+    onMouseDown(event) {
+        console.log("event", event);
         const orbitCamera = this.toolOptions.orbitCamera;
         const orbitCameraOptions = orbitCamera.toolOptions;
         switch (event.button) {
@@ -479,13 +407,11 @@ export class OrbitCameraInput_Mouse {
                 break;
         }
     }
-
     /**
      * 鼠标移动事件监听
      * @param {MouseEvent} event 鼠标移动事件
      */
-    onMouseMove(event)
-    {
+    onMouseMove(event) {
         const dx = event.x - this.lastPoint.x;
         const dy = event.y - this.lastPoint.y;
         if (this.isRotateButtonDown || this.isLookButtonDown) {
@@ -494,16 +420,13 @@ export class OrbitCameraInput_Mouse {
         } else if (this.isPanButtonDown) {
             this.pan(event);
         }
-
         this.lastPoint.set(event.x, event.y);
     }
-
     /**
      * 鼠标抬起事件监听
      * @param {MouseEvent} event 鼠标抬起事件
      */
-    onMouseUp(event)
-    {
+    onMouseUp(event) {
         const orbitCamera = this.toolOptions.orbitCamera;
         switch (event.button) {
             case pc.MOUSEBUTTON_LEFT:
@@ -521,26 +444,23 @@ export class OrbitCameraInput_Mouse {
                 break;
         }
     }
-
     /**
      * 鼠标滚轮事件监听
-     * @param event 鼠标滚轮事件
+     * @param {OrbitCameraInputOption} event 鼠标滚轮事件
      */
-    onMouseWheel(event/*: OrbitCameraInputOption*/)
-    {
+    onMouseWheel(event) {
+        console.log("mouse wheel", event);
         const orbitCamera = this.toolOptions.orbitCamera;
         const orbitCameraOptions = orbitCamera.toolOptions;
         if (!orbitCameraOptions.distanceCondition || orbitCameraOptions.distanceCondition()) {
             orbitCamera.distance += event.wheelDelta * this.toolOptions.distanceSensitivity * (orbitCamera.distance * 0.1);
         }
     }
-
     /**
      * 移动鼠标时平移相机视角
      * @param {{ x: number, y: number }} event 鼠标移动事件
      */
-    pan(event)
-    {
+    pan(event) {
         const orbitCamera = this.toolOptions.orbitCamera;
         const camera = orbitCamera.toolOptions.mainCamra;
         camera.screenToWorld(event.x, event.y, orbitCamera.distance, this.fromWorldPoint);
@@ -548,29 +468,22 @@ export class OrbitCameraInput_Mouse {
         this.worldDiff.sub2(this.toWorldPoint, this.fromWorldPoint);
         orbitCamera.pivotPoint.add(this.worldDiff);
     }
-
-    onEnable() // todo void
-    {
-        this.app.mouse.on(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
-        this.app.mouse.on(pc.EVENT_MOUSEWHEEL, this.onMouseWheel, this);
+    onEnable() {
+        this.app?.mouse?.on(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
+        this.app?.mouse?.on(pc.EVENT_MOUSEWHEEL, this.onMouseWheel, this);
         window.addEventListener("mousemove", this.onMouseMove.bind(this));
         window.addEventListener("mouseup", this.onMouseUp.bind(this));
     }
-
-    onDisable() // todo void
-    {
-        this.app.mouse.off(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
-        this.app.mouse.off(pc.EVENT_MOUSEWHEEL, this.onMouseWheel, this);
+    onDisable() {
+        this.app?.mouse?.off(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
+        this.app?.mouse?.off(pc.EVENT_MOUSEWHEEL, this.onMouseWheel, this);
         window.removeEventListener("mousemove", this.onMouseMove.bind(this));
         window.removeEventListener("mouseup", this.onMouseUp.bind(this));
     }
 }
-
-
 /**
  * 观测相机触摸屏输入
  */
-//@tool("OrbitCameraInput_TouchScreen")
 export class OrbitCameraInput_TouchScreen {
     // 默认选项
     toolOptionsDefault/*: OrbitCameraInputOption*/ = {
@@ -578,39 +491,27 @@ export class OrbitCameraInput_TouchScreen {
         orbitSensitivity: 0.25,
         distanceSensitivity: 1.5
     };
-
-    fromWorldPoint/*: pc.Vec3*/;
-    toWorldPoint/*: pc.Vec3*/;
-    worldDiff/*: pc.Vec3*/;
-    pinchMidPoint/*: pc.Vec2*/;
-    lastTouchPoint/*: pc.Vec2*/;
-    lastPinchMidPoint/*: pc.Vec2*/;
-    lastPinchDistance/*: number*/;
-
-    constructor(options/*: OrbitCameraInputOption*/)
-    {
+    fromWorldPoint = new pc.Vec3();
+    toWorldPoint = new pc.Vec3();
+    worldDiff = new pc.Vec3();
+    pinchMidPoint = new pc.Vec2();
+    lastTouchPoint = new pc.Vec2();
+    lastPinchMidPoint = new pc.Vec2();
+    lastPinchDistance = 0;
+    /**
+     * @param {OrbitCameraInputOption} options
+     */
+    constructor(options) {
         if (!this.app.touch) {
             console.error("触屏设备不存在，请更改输入设备");
             return;
         }
-
-        this.setOptions(options);
-
-        this.fromWorldPoint = new pc.Vec3();
-        this.toWorldPoint = new pc.Vec3();
-        this.worldDiff = new pc.Vec3();
-        this.pinchMidPoint = new pc.Vec2();
-        this.lastTouchPoint = new pc.Vec2();
-        this.lastPinchMidPoint = new pc.Vec2();
-        this.lastPinchDistance = 0;
     }
-
     /**
      * 触屏操作开始，结束，取消事件回调
      * @param {pc.TouchEvent} event 触屏开始，结束，取消事件
      */
-    onTouchStartEndCancel(event)
-    {
+    onTouchStartEndCancel(event) {
         var touches = event.touches;
         if (touches.length == 1) {
             this.lastTouchPoint.set(touches[0].x, touches[0].y);
@@ -621,7 +522,6 @@ export class OrbitCameraInput_TouchScreen {
         this.toolOptions.orbitCamera.isRotating = false;
         this.toolOptions.orbitCamera.isPaning = false;
     }
-
     /**
      * 触屏移动事件回调
      * @param {pc.TouchEvent} event 触屏移动事件
@@ -633,24 +533,19 @@ export class OrbitCameraInput_TouchScreen {
         var touches = event.touches;
         if (touches.length == 1) {
             const touch = touches[0];
-
             if (!orbitCameraOptions.rotateCondition || orbitCameraOptions.rotateCondition()) {
                 orbitCamera.isRotating = true;
                 orbitCamera.pitch -= (touch.y - this.lastTouchPoint.y) * this.toolOptions.orbitSensitivity;
                 orbitCamera.yaw -= (touch.x - this.lastTouchPoint.x) * this.toolOptions.orbitSensitivity;
             }
-
             this.lastTouchPoint.set(touch.x, touch.y);
-
         } else if (touches.length == 2) {
             const currentPinchDistance = this.getPinchDistance(touches[0], touches[1]);
             const diffInPinchDistance = currentPinchDistance - this.lastPinchDistance;
             this.lastPinchDistance = currentPinchDistance;
-
             if (!orbitCameraOptions.distanceCondition || orbitCameraOptions.distanceCondition()) {
                 orbitCamera.distance -= (diffInPinchDistance * this.toolOptions.distanceSensitivity * 0.1) * (orbitCamera.distance * 0.1);
             }
-
             this.calcMidPoint(touches[0], touches[1], this.pinchMidPoint);
             if (!orbitCameraOptions.panCondition || orbitCameraOptions.panCondition()) {
                 orbitCamera.isPaning = true;
@@ -659,68 +554,52 @@ export class OrbitCameraInput_TouchScreen {
             this.lastPinchMidPoint.copy(this.pinchMidPoint);
         }
     }
-
     /**
      * 根据触屏中心点位置平移相机
-     * @param midPoint 触屏中心点
+     * @param {pc.Vec2} midPoint 触屏中心点
      */
-    pan(midPoint/*: pc.Vec2*/)
-    {
+    pan(midPoint) {
         const orbitCamera = this.toolOptions.orbitCamera;
-
         const fromWorldPoint = this.fromWorldPoint;
         const toWorldPoint = this.toWorldPoint;
         const worldDiff = this.worldDiff;
-
         const camera = orbitCamera.toolOptions.mainCamra;
         const distance = orbitCamera.distance;
-
         camera.screenToWorld(midPoint.x, midPoint.y, distance, fromWorldPoint);
         camera.screenToWorld(this.lastPinchMidPoint.x, this.lastPinchMidPoint.y, distance, toWorldPoint);
-
         worldDiff.sub2(toWorldPoint, fromWorldPoint);
-
         orbitCamera.pivotPoint.add(worldDiff);
     }
-
     /**
      * 计算中点
      * @param {{ x: number, y: number }} pointA 起点
      * @param {{ x: number, y: number }} pointB 终点
-     * @param {} result 中心点
+     * @param {pc.Vec2} result 中心点
      */
-    calcMidPoint(pointA, pointB, result/*: pc.Vec2*/)
-    {
+    calcMidPoint(pointA, pointB, result) {
         result.set(pointB.x - pointA.x, pointB.y - pointA.y);
         result.mulScalar(0.5);
         result.x += pointA.x;
         result.y += pointA.y;
-    };
-
+    }
     /**
      * 获得两点距离
      * @param {{ x: number, y: number }} pointA 原始点
      * @param {{ x: number, y: number }} pointB 目标点
-     * @returns 两点距离
+     * @returns {number} 两点距离
      */
-    getPinchDistance(pointA, pointB)/*: number*/
-    {
+    getPinchDistance(pointA, pointB) {
         const dx = pointA.x - pointB.x;
         const dy = pointA.y - pointB.y;
-
         return Math.sqrt((dx * dx) + (dy * dy));
     }
-
-    onEnable() // todo void
-    {
+    onEnable() {
         this.app.touch.on(pc.EVENT_TOUCHSTART, this.onTouchStartEndCancel, this);
         this.app.touch.on(pc.EVENT_TOUCHEND, this.onTouchStartEndCancel, this);
         this.app.touch.on(pc.EVENT_TOUCHCANCEL, this.onTouchStartEndCancel, this);
         this.app.touch.on(pc.EVENT_TOUCHMOVE, this.onTouchMove, this);
     }
-
-    onDisable() // todo void
-    {
+    onDisable() {
         this.app.touch.off(pc.EVENT_TOUCHSTART, this.onTouchStartEndCancel, this);
         this.app.touch.off(pc.EVENT_TOUCHEND, this.onTouchStartEndCancel, this);
         this.app.touch.off(pc.EVENT_TOUCHCANCEL, this.onTouchStartEndCancel, this);
