@@ -38,7 +38,7 @@ cube1.translate(0, 1, 0);
 app.root.addChild(cube1);
 // create box entity
 const cube2 = new pc.Entity('cube2');
-cube2.addComponent('model', {
+cube2.addComponent('render', {
   type: 'box',
 });
 cube2.translate(0, -1, 0);

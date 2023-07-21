@@ -6,6 +6,7 @@
  * 详情: 点选模型
  */
 import * as pc from "playcanvas";
+import { findEntityForModelGraphNode } from "./findEntityForModelGraphNode.mjs";
 // import type { InputEventsMap } from "../utils/common/InputEventsMap";
 /**
  * 模型点选事件-回调表
@@ -106,13 +107,18 @@ export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions,
         this.picker.prepare(options.pickCamera, this.app.scene, this.pickLayers);
         const selected = this.picker.getSelection(event.x * options.pickAreaScale, event.y * options.pickAreaScale);
         if (selected.length > 0 && selected[0]?.node) {
+            const firstPick = findEntityForModelGraphNode(selected[0].node);
             if (!options.pickTag || options.pickTag.length <= 0) {
-                if (!options.pickSame && this.preSelectedNode == selected[0].node) { return; }
-                this.fire("select", selected[0].node, this.preSelectedNode);
-                this.preSelectedNode = selected[0].node;
+                if (!options.pickSame && this.preSelectedNode === firstPick) {
+                    return;
+                }
+                this.fire("select", firstPick, this.preSelectedNode);
+                this.preSelectedNode = firstPick;
             } else {
-                const selectedNode = this.getModelHasTag(selected[0].node, options.pickTag);
-                if (!options.pickSame && this.preSelectedNode == selectedNode) { return; }
+                const selectedNode = this.getModelHasTag(firstPick, options.pickTag);
+                if (!options.pickSame && this.preSelectedNode === selectedNode) {
+                    return;
+                }
                 this.fire("select", selectedNode, this.preSelectedNode);
                 this.preSelectedNode = selectedNode;
             }

@@ -386,7 +386,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
             toolOptions.showOutline && this.outLineCamera.toggleOutLine(entity, false);
         });
         if (target == null || (Array.isArray(target) && target.length <= 0)) {
-            this.trackEntities = [];
+            this.trackEntities.length = 0;
             this.transformHandle.enabled = false;
             this.app.off("update", this.update, this);
             this.fire("select", this.trackEntities);
@@ -952,8 +952,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
             this.planeOffset = this.planeOffsetVec.dot(this.planeFollowNormal);
             this.planesOffsetVec = [];
             this.planesOffset = [];
-            this.trackEntities.forEach(entity =>
-            {
+            this.trackEntities.forEach(entity => {
                 const planeOffsetVec = new pc.Vec3().sub2(this.planeIntersectPoint, entity.getPosition());
                 const planeOffset = planeOffsetVec.dot(this.planeFollowNormal);
                 this.planesOffsetVec.push(planeOffsetVec);
@@ -978,12 +977,10 @@ export class RuntimeTransformHandle extends pc.EventHandler {
             this.startRotateVec.sub2(this.planeIntersectPoint, handlePos);
             this.startRotateVerticalVec.cross(this.startRotateVec, this.planeMoveNormal).mulScalar(-1);
             this.entitysRotationOffset = [];
-            this.trackEntities.forEach(entity =>
-            {
+            this.trackEntities.forEach(entity => {
                 if (this.pivotType === PivotType.World) {
                     this.entitysRotationOffset.push(new pc.Vec3().sub2(entity.getPosition(), handlePos));
-                }
-                else if (this.pivotType === PivotType.Local) {
+                } else if (this.pivotType === PivotType.Local) {
                     const rotateNormal = new pc.Vec3();
                     if (this.selectedType === SelectType.AxisX) {
                         rotateNormal.copy(entity.right);
@@ -1001,8 +998,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
         // 针对放缩坐标轴设置初始参考尺寸
         else if (this.handleType === HandleType.Scale) {
             this.startScales = [];
-            this.trackEntities.forEach(entity =>
-            {
+            this.trackEntities.forEach(entity => {
                 this.startScales.push(entity.getLocalScale());
             });
             if (this.selectedType === SelectType.AxisX) {
