@@ -27,8 +27,10 @@ import { findEntityForModelGraphNode } from "./findEntityForModelGraphNode.mjs";
  * @property {pc.Layer[]} [excludeLayers]
  */
 export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOptions, SelectorEventsMap>*/
-    // 默认选项
-    /** @type {SelectorOptions} */
+    /**
+     * 默认选项
+     * @type {SelectorOptions}
+     */
     toolOptionsDefault = {
         //inputHandler: this.app.touch ? use("TouchInputer") : use("MouseInputer"),
         pickCamera: this.app.systems.camera.cameras[0],
@@ -54,10 +56,15 @@ export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOption
      */
     pickLayers;
     /**
-     * @private
+     * @todo turn into array
      * @type {pc.GraphNode}
      */
     preSelectedNode;
+    /**
+     * Used for type system simplification and prevention of GC
+     * @type {Array<pc.GraphNode|pc.Entity>}
+     */
+    pickedEntities = [];
     /**
      * 创建模型点选器
      * @param {SelectorOptions} options 模型点选设置
@@ -91,7 +98,7 @@ export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOption
      * @param {boolean} event.ctrlKey - Toggle
      */
     pick(event) {
-        console.log("toggle", event.ctrlKey);
+        const toggle = event.ctrlKey;
         const options = this.toolOptions;
         if (options.pickCondition && !options.pickCondition()) {
             return;
@@ -102,24 +109,28 @@ export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOption
         this.picker.resize(canvasWidth * options.pickAreaScale, canvasHeight * options.pickAreaScale);
         this.picker.prepare(options.pickCamera, this.app.scene, this.pickLayers);
         const selected = this.picker.getSelection(event.x * options.pickAreaScale, event.y * options.pickAreaScale);
+        this.pickedEntities.length = 0;
+        const fire = () => this.fire("select", this.pickedEntities, this.preSelectedNode, toggle);
         if (selected.length > 0 && selected[0]?.node) {
             const firstPick = findEntityForModelGraphNode(selected[0].node);
             if (!options.pickTag || options.pickTag.length <= 0) {
                 if (!options.pickSame && this.preSelectedNode === firstPick) {
                     return;
                 }
-                this.fire("select", firstPick, this.preSelectedNode);
+                this.pickedEntities.push(firstPick);
+                fire();
                 this.preSelectedNode = firstPick;
             } else {
                 const selectedNode = this.getModelHasTag(firstPick, options.pickTag);
                 if (!options.pickSame && this.preSelectedNode === selectedNode) {
                     return;
                 }
-                this.fire("select", selectedNode, this.preSelectedNode);
+                this.pickedEntities.push(selectedNode);
+                fire();
                 this.preSelectedNode = selectedNode;
             }
         } else if (options.pickNull) {
-            this.fire("select", null, this.preSelectedNode);
+            fire();
             this.preSelectedNode = null;
         }
     }

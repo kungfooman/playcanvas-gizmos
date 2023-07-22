@@ -86,22 +86,34 @@ export class OutlineCamera {
     * @param {pc.Entity} entity 节点
     * @param {boolean} state 开关状态
     */
-    toggleOutLine(entity, isOn) {
+    toggleOutline(entity, isOn) {
         const outLineLayerId = this.app.scene.layers.getLayerByName(this.toolOptions.outlineLayerName).id;
         MaterialController.processNodeDeep(entity, null, model => {
-            const renderComponent = model /*as pc.RenderComponent*/;
+            const renderComponent = model;
             if (renderComponent.layers) {
                 !layerMap.get(renderComponent) && layerMap.set(renderComponent, [...renderComponent.layers]);
                 const preLayers = layerMap.get(renderComponent);
                 renderComponent.layers = isOn ? [...preLayers, outLineLayerId] : preLayers;
             }
-            const modelComponent = model /*as pc.ModelComponent*/;
+            const modelComponent = model;
             if (modelComponent.layers) {
                 !layerMap.get(modelComponent) && layerMap.set(modelComponent, [...modelComponent.layers]);
                 const preLayers = layerMap.get(modelComponent);
                 modelComponent.layers = isOn ? [...preLayers, outLineLayerId] : preLayers;
             }
         });
+    }
+    /**
+     * @param {pc.Entity} entity 
+     */
+    enableOutline(entity) {
+        this.toggleOutline(entity, true);
+    }
+    /**
+     * @param {pc.Entity} entity 
+     */
+    disableOutline(entity) {
+        this.toggleOutline(entity, false);
     }
     /**
     * 初始化后期特效

@@ -26,6 +26,7 @@ import { RTH_KeyboardInputer } from './input/keyboardInput.mjs';
 import { CustomPlane         } from './CustomPlane.mjs';
 import { Selector            } from "../../tools/selector/selector.mjs";
 import { MultiSelector       } from "../../tools/selector/multiSelector.mjs";
+import { arrayCompare } from "../../utils/func/array.mjs";
 /**
  * RTH选项
  * @typedef {Object} RTHOptions
@@ -70,47 +71,38 @@ export class RuntimeTransformHandle extends pc.EventHandler {
     rotationHandle    = generateRotatioHandle();
     scaleHandle       = generateScaleHandle();
     /**
-     * @private
      * @type {pc.Entity}
      */
     planeXEntity;
     /**
-     * @private
      * @type {pc.Entity}
      */
     planeYEntity;
     /**
-     * @private
      * @type {pc.Entity}
      */
     planeZEntity;
     /**
-     * @private
      * @type {pc.Entity}
      */
     planeEdge1XEntity;
     /**
-     * @private
      * @type {pc.Entity}
      */
     planeEdge2XEntity;
     /**
-     * @private
      * @type {pc.Entity}
      */
     planeEdge1YEntity;
     /**
-     * @private
      * @type {pc.Entity}
      */
     planeEdge2YEntity;
     /**
-     * @private
      * @type {pc.Entity}
      */
     planeEdge1ZEntity;
     /**
-     * @private
      * @type {pc.Entity}
      */
     planeEdge2ZEntity;
@@ -292,7 +284,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
                 pickCondition: toolOptions.selectCondition,
                 pickSame: true,
             });
-            selector.on("select", selectedNode => this.select(selectedNode /*as pc.Entity*/), this);
+            selector.on("select", this.select, this);
             if (toolOptions.multiSelect) {
                 const expectCondition = () => {
                     return (
@@ -309,7 +301,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
                     excludeLayers: [RTHLayer(), RTH_RuntimeGrid.layer, UILayer],
                     expectCondition,
                 });
-                multiSelector.on("selecting", selectedNodes => this.select(selectedNodes /*as pc.Entity[]*/), this);
+                multiSelector.on("selecting", this.select, this);
             }
             // 监听鼠标事件
             mouseInputer.on("down", this.onControlDown, this);
@@ -368,40 +360,64 @@ export class RuntimeTransformHandle extends pc.EventHandler {
     /**
      * 选中模型
      * @todo 考虑选中物体的层级影响
-     * @param {pc.Entity | pc.Entity[]} target 选中的单个模型或模型数组（传入null时则取消选中）
-     * @param {boolean} saveRecord 是否保存记录
+     * @param {pc.Entity[]} targets 选中的单个模型或模型数组（传入null时则取消选中）
+     * @param {boolean} [saveRecord] 是否保存记录
+     * @param {boolean} toggle - Click while holding CTRL to toggle
      */
-    select(target, saveRecord = false) {
+    select(targets, saveRecord = false, toggle = false) {
+        console.assert(this.trackEntities !== targets, "arrays should be independent");
+        if (toggle) {
+            for (const target of targets) {
+                const i = this.trackEntities.findIndex(_ => _ === target);
+                if (i !== -1) {
+                    this.outLineCamera.disableOutline(target);
+                    this.trackEntities.splice(i, 1);
+                } else {
+                    this.outLineCamera.enableOutline(target);
+                    this.trackEntities.push(target);
+                }
+            }
+            if (!this.trackEntities.length) {
+                this.transformHandle.enabled = false;
+            }
+            return;
+        }
         // 判断两次选择是否完全相同
-        if (this.selectionIsEqual(target)) {
+        if (this.selectionIsEqual(targets)) {
             return;
         }
         if (this.isDragging) {
             return;
         }
-        const toolOptions = this.toolOptions;
+        const { showOutline, showHandle } = this.toolOptions;
         // 关闭先前选中模型的描边特效
-        this.trackEntities.forEach(entity => {
-            toolOptions.showOutline && this.outLineCamera.toggleOutLine(entity, false);
-        });
-        if (target == null || (Array.isArray(target) && target.length <= 0)) {
+        if (showOutline) {
+            this.trackEntities.forEach(entity => {
+                this.outLineCamera.disableOutline(entity);
+            });
+        }
+        if (!targets.length) {
             this.trackEntities.length = 0;
             this.transformHandle.enabled = false;
             this.app.off("update", this.update, this);
             this.fire("select", this.trackEntities);
             return;
         }
-        if (this.trackEntities.length <= 0 && toolOptions.showHandle) {
+        if (this.trackEntities.length <= 0 && showHandle) {
             this.app.on("update", this.update, this);
         }
-        this.trackEntities = Array.isArray(target) ? target : [target];
-        this.trackEntities.forEach(entity => {
-            toolOptions.showOutline && this.outLineCamera.toggleOutLine(entity, true);
-        });
+        this.trackEntities = targets.slice(); // make sure we get a copy... todo: arrCpy(this.trackEntities, targets);
+        if (showOutline) {
+            this.trackEntities.forEach(entity => {
+                this.outLineCamera.enableOutline(entity);
+            });
+        }
         // 开启选中模型的描边特效
-        this.transformHandle.enabled = true && toolOptions.showHandle;
+        this.transformHandle.enabled = showHandle;
         this.fire("select", this.trackEntities);
-        saveRecord && this.updateRecord();
+        if (saveRecord) {
+            this.updateRecord();
+        }
     }
     /**
      * 聚焦选中物体
@@ -462,40 +478,32 @@ export class RuntimeTransformHandle extends pc.EventHandler {
     }
     /**
      * 判断本次选择是否和上次相同
-     * @private
-     * @param {pc.Entity | pc.Entity[]} target 选中的单个模型或模型数组
+     * @param {pc.Entity[]} targets 选中的单个模型或模型数组
      * @returns {boolean}
      */
-    selectionIsEqual(target) {
-        if (target == null && this.trackEntities.length <= 0) {
-            return true;
-        }
-        if (!Array.isArray(target)) {
-            return this.trackEntities.length == 1 && target == this.trackEntities[0];
-        }
-        return this.trackEntities.length == target.length && this.trackEntities.every((e, index) => e == target[index]);
+    selectionIsEqual(targets) {
+        return arrayCompare(targets, this.trackEntities);
     }
     /**
      * 帧更新
-     * @private
      * @param {number} dt 本帧的时长
      */
     update(dt) {
         // 没有选中模型时不更新
-        if (this.trackEntities.length <= 0) {
+        if (!this.trackEntities.length) {
             return;
         }
-        const toolOptions = this.toolOptions;
-        this.updateTransform(toolOptions.mainCamera);
-        this.updateDisplay(toolOptions.mainCamera);
-        this.updateHandle(toolOptions.mainCamera);
+        const { mainCamera } = this.toolOptions;
+        this.updateTransform(mainCamera);
+        this.updateDisplay(mainCamera);
+        this.updateHandle(mainCamera);
     }
     /**
      * 根据选中的物体，更新坐标轴的几何状态
      * @param {pc.CameraComponent} camera 当前渲染相机
      */
     updateTransform(camera) {
-        if (this.trackEntities.length <= 0) {
+        if (!this.trackEntities.length) {
             return;
         }
         if (!this.isDragging) {

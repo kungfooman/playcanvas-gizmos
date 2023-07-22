@@ -6,7 +6,10 @@ function addGizmo() {
   gizmo.transformHandle.enabled = true;
   gizmo.orbitCamera.yaw = -60;
   gizmo.orbitCamera.distance = 20;
-  gizmo.select(app.root.children[0]);
+  gizmo.select([
+    cube0,
+    cube2,
+  ]);
   gizmo.orbitCamera.device = "mouse";
   return gizmo;
 }
