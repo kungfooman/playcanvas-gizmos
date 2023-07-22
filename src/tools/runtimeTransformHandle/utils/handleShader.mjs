@@ -42,7 +42,7 @@ dDiffuseLight = vec3(0.0);
 // x轴材质
 const axisXMat = new pc.StandardMaterial();
 axisXMat.chunks.endPS = noAmbientEndPS;
-axisXMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+axisXMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 axisXMat.blendType = pc.BLEND_NORMAL;
 axisXMat.opacity = 1;
 axisXMat.emissive.set(1, 0, 0);
@@ -53,7 +53,7 @@ axisXMat.update();
 // y轴材质
 const axisYMat = new pc.StandardMaterial();
 axisYMat.chunks.endPS = noAmbientEndPS;
-axisYMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+axisYMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 axisYMat.blendType = pc.BLEND_NORMAL;
 axisYMat.opacity = 1;
 axisYMat.emissive.set(0, 1, 0);
@@ -64,7 +64,7 @@ axisYMat.update();
 // z轴材质
 const axisZMat = new pc.StandardMaterial();
 axisZMat.chunks.endPS = noAmbientEndPS;
-axisZMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+axisZMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 axisZMat.blendType = pc.BLEND_NORMAL;
 axisZMat.opacity = 1;
 axisZMat.emissive.set(0, 0, 1);
@@ -75,7 +75,7 @@ axisZMat.update();
 // x平面材质
 const planXMat = new pc.StandardMaterial();
 planXMat.chunks.endPS = noAmbientEndPS;
-planXMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+planXMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 planXMat.emissive.set(1, 0, 0);
 planXMat.blendType = pc.BLEND_NORMAL;
 planXMat.opacity = 0.3;
@@ -87,7 +87,7 @@ planXMat.update();
 // y平面材质
 const planYMat = new pc.StandardMaterial();
 planYMat.chunks.endPS = noAmbientEndPS;
-planYMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+planYMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 planYMat.emissive.set(0, 1, 0);
 planYMat.blendType = pc.BLEND_NORMAL;
 planYMat.opacity = 0.3;
@@ -99,7 +99,7 @@ planYMat.update();
 // z平面材质
 const planZMat = new pc.StandardMaterial();
 planZMat.chunks.endPS = noAmbientEndPS;
-planZMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+planZMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 planZMat.emissive.set(0, 0, 1);
 planZMat.blendType = pc.BLEND_NORMAL;
 planZMat.opacity = 0.3;
@@ -111,7 +111,7 @@ planZMat.update();
 // x平面边框材质
 const planeEdgeXMat = new pc.StandardMaterial();
 planeEdgeXMat.chunks.endPS = noAmbientEndPS;
-planeEdgeXMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+planeEdgeXMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 planeEdgeXMat.blendType = pc.BLEND_NORMAL;
 planeEdgeXMat.opacity = 1;
 planeEdgeXMat.emissive.set(1, 0, 0);
@@ -122,7 +122,7 @@ planeEdgeXMat.update();
 // y平面边框材质
 const planeEdgeYMat = new pc.StandardMaterial();
 planeEdgeYMat.chunks.endPS = noAmbientEndPS;
-planeEdgeYMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+planeEdgeYMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 planeEdgeYMat.blendType = pc.BLEND_NORMAL;
 planeEdgeYMat.opacity = 1;
 planeEdgeYMat.emissive.set(0, 1, 0);
@@ -133,7 +133,7 @@ planeEdgeYMat.update();
 // z平面边框材质
 const planeEdgeZMat = new pc.StandardMaterial();
 planeEdgeZMat.chunks.endPS = noAmbientEndPS;
-planeEdgeZMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+planeEdgeZMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 planeEdgeZMat.blendType = pc.BLEND_NORMAL;
 planeEdgeZMat.opacity = 1;
 planeEdgeZMat.emissive.set(0, 0, 1);
@@ -144,7 +144,7 @@ planeEdgeZMat.update();
 // 全透明材质
 const transparentMat = new pc.StandardMaterial();
 transparentMat.chunks.endPS = noAmbientEndPS;
-transparentMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+transparentMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 transparentMat.blendType = pc.BLEND_NORMAL;
 transparentMat.opacity = 0;
 transparentMat.useLighting = false;
@@ -154,7 +154,7 @@ transparentMat.update();
 // 半透明材质
 const halfTransMat = new pc.StandardMaterial();
 halfTransMat.chunks.endPS = noAmbientEndPS;
-halfTransMat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+halfTransMat.chunks.APIVersion = pc.CHUNKAPI_1_65;
 halfTransMat.emissive.set(1, 1, 1, 1);
 halfTransMat.blendType = pc.BLEND_NORMAL;
 halfTransMat.opacity = 0.5;

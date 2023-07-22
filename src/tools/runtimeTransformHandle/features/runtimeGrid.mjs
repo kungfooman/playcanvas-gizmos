@@ -90,7 +90,7 @@ export class RTH_RuntimeGrid {
         mesh.update(pc.PRIMITIVE_LINES);
         const mat = new pc.StandardMaterial();
         mat.chunks.endPS = noAmbientEndPS;
-        mat.chunks.APIVersion = pc.CHUNKAPI_1_62;
+        mat.chunks.APIVersion = pc.CHUNKAPI_1_65;
         mat.useLighting = false;
         mat.useSkybox = false;
         mat.emissive.copy(color);
