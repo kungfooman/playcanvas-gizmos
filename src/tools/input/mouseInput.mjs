@@ -9,15 +9,14 @@ import * as pc from "playcanvas";
 // import type { InputEventsMap } from "../../utils/common/InputEventsMap";
 /**
  * 鼠标输入选项
- */
-/**
  * @typedef {object} MouseInputOptions
  * @property {number} clickError
  */
-export class MouseInputer extends pc.EventHandler //extends Tool<MouseInputOptions, InputEventsMap>
-{
-    // 默认选项
-    /** @type {MouseInputOptions} */
+export class MouseInputer extends pc.EventHandler { //extends Tool<MouseInputOptions, InputEventsMap>
+    /**
+     * 默认选项
+     * @type {MouseInputOptions}
+     * */
     toolOptionsDefault = {
         clickError: 1
     };
@@ -40,18 +39,13 @@ export class MouseInputer extends pc.EventHandler //extends Tool<MouseInputOptio
         this.onEnable();
     }
     /**
-     * 
      * @param {pc.MouseEvent} event 
      */
-    onMouseDown(event)
-    {
+    onMouseDown(event) {
         this.isDragging = true;
         this.mouseDownVec.set(event.x, event.y);
         this.mouseMoveVec.set(event.x, event.y);
-        this.fire("down", {
-            x: this.mouseDownVec.x,
-            y: this.mouseDownVec.y
-        });
+        this.fire("down", event);
     }
     /**
      * 
@@ -82,22 +76,14 @@ export class MouseInputer extends pc.EventHandler //extends Tool<MouseInputOptio
      * @param {pc.MouseEvent} event 
      */
     onMouseUp(event) {
+        const { mouseUpVec, mouseDownVec, toolOptions } = this;
         this.mouseUpVec.set(event.x, event.y);
-        if (this.mouseUpVec.distance(this.mouseDownVec) < this.toolOptions.clickError) {
-            this.fire("click", {
-                x: this.mouseUpVec.x,
-                y: this.mouseUpVec.y
-            });
+        if (mouseUpVec.distance(mouseDownVec) < toolOptions.clickError) {
+            this.fire("click", event);
         }
-        this.fire("up", {
-            x: this.mouseUpVec.x,
-            y: this.mouseUpVec.y
-        });
+        this.fire("up", event);
         if (this.isDragging) {
-            this.fire("dragEnd", {
-                x: this.mouseUpVec.x,
-                y: this.mouseUpVec.y
-            });
+            this.fire("dragEnd", event);
         }
         this.isDragging = false;
     }

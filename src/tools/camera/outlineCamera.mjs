@@ -54,7 +54,6 @@ export class OutlineCamera {
             color: this.toolOptions.outlineColor,
             thickness: this.toolOptions.outlineThickness,
         });
-        this._bound_update = this.update.bind(this);
         this.onEnable();
     }
     /**
@@ -188,11 +187,11 @@ export class OutlineCamera {
         this.resetEffect();
     }
     onEnable() {
-        this.app?.on("update", this._bound_update);
+        this.app?.on("update", this.update, this);
         this.app?.graphicsDevice.on("resizecanvas", this.onResize, this);
     }
     onDisable() {
-        this.app?.off("update", this._bound_update);
+        this.app?.off("update", this.update, this);
         this.app?.graphicsDevice.off("resizecanvas", this.onResize, this);
     }
 }

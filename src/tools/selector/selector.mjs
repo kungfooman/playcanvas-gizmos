@@ -85,11 +85,13 @@ export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOption
     }
     /**
      * 点选模型
-     * @param {object} event 输入事件
-     * @param {number} event.x 输入事件屏幕x坐标 
-     * @param {number} event.y 输入事件屏幕y坐标  
+     * @param {pc.MouseEvent} event - 输入事件
+     * @param {number} event.x - 输入事件屏幕x坐标
+     * @param {number} event.y - 输入事件屏幕y坐标
+     * @param {boolean} event.ctrlKey - Toggle
      */
     pick(event) {
+        console.log("toggle", event.ctrlKey);
         const options = this.toolOptions;
         if (options.pickCondition && !options.pickCondition()) {
             return;
