@@ -54,7 +54,15 @@ export class OutlineCamera {
             color: this.toolOptions.outlineColor,
             thickness: this.toolOptions.outlineThickness,
         });
+        this._bound_update = this.update.bind(this);
         this.onEnable();
+    }
+    /**
+     * @param {number} dt 
+     */
+    update(dt) {
+        this.outlineCamera.fov           = this.toolOptions.mainCamera.fov;
+        this.outlineCamera.horizontalFov = this.toolOptions.mainCamera.horizontalFov;
     }
     /**
      * 设置外边框相机选项
@@ -117,17 +125,9 @@ export class OutlineCamera {
             const outlineCamera = outlineCameraEntity.addComponent("camera", {
                 clearColor: new pc.Color(0.0, 0.0, 0.0, 0.0), // 透明背景色
                 layers: [this.outlineLayer.id], // 只渲染outlineLayer
-            }) /*as pc.CameraComponent*/;
-            //this.app.root.addChild(outlineCameraEntity);
+            });
             this.toolOptions.mainCamera?.entity.addChild(outlineCameraEntity);
             this.outlineCamera = outlineCamera;
-            // todo: update loop
-            //this.outlineCamera.fov           = this.toolOptions.mainCamera.fov;
-            //this.outlineCamera.horizontalFov = this.toolOptions.mainCamera.horizontalFov;
-            CameraComponent_EX.prototype.follow.bind(
-                this.outlineCamera,
-                this.toolOptions.mainCamera,
-            )
         }
         this.outlineCamera.renderTarget = this.createRenderTarget(); // 给layer添加renderTarget;
         // 创建描边特效并添加至相机
@@ -138,15 +138,12 @@ export class OutlineCamera {
         // 若传入了设置，则重新生成特效；若不传入设置，不重新生成，仅重置特效
         if (option) {
             this.outlineEffect = new PostEffectOutline(this.app.graphicsDevice, {
-                // outlineLayer: this.outlineLayer,
                 color: option.color,
                 thickness: option.thickness,
             });
         }
         this.outlineEffect.texture = this.outlineCamera.renderTarget.colorBuffer;
         this.toolOptions.mainCamera.postEffects.addEffect(this.outlineEffect); // 添加特效至相机
-        // CameraComponent_EX#follow(), it's just for following fov/horizontalFov
-        //this.outlineCamera.follow(this.toolOptions.mainCamera); // 同步相机
     }
     /**
      * @type {pc.Color}
@@ -191,9 +188,11 @@ export class OutlineCamera {
         this.resetEffect();
     }
     onEnable() {
-        this.app.graphicsDevice.on("resizecanvas", this.onResize, this);
+        this.app?.on("update", this._bound_update);
+        this.app?.graphicsDevice.on("resizecanvas", this.onResize, this);
     }
     onDisable() {
-        this.app.graphicsDevice.off("resizecanvas", this.onResize, this);
+        this.app?.off("update", this._bound_update);
+        this.app?.graphicsDevice.off("resizecanvas", this.onResize, this);
     }
 }

@@ -11,6 +11,8 @@ import { MeshInstance_EX } from "../extensions/meshInstance.mjs";
 export class CameraComponent_EX extends pc.CameraComponent {
     /**
     * 跟随另一个相机（与另一相机的几何信息保持相同）
+    * @example
+    * this.outlineCamera.follow(this.toolOptions.mainCamera); // 同步相机
     * @param {pc.CameraComponent} camera 要跟随的相机
     */
     follow(camera) {
