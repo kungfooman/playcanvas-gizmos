@@ -46,7 +46,6 @@ import { MultiSelector       } from "../../tools/selector/multiSelector.mjs";
  * @property {(selectedNodes: pc.Entity[]) => any} select
  * @property {(selectedNodes: pc.Entity[]) => any} focus
  */
-//@tool("RuntimeTransformHandle")
 export class RuntimeTransformHandle extends pc.EventHandler {
     // 默认选项
     /** @type {RTHOptions} */

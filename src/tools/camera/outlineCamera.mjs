@@ -15,8 +15,6 @@ import { CameraComponent_EX } from '../../extensions/cameraComponent.mjs';
  */
 /**
  * 外边框相机选项
- */
-/**
  * @typedef outlineCameraOptions
  * @property {pc.CameraComponent} [mainCamera]
  * @property {string} [outlineLayerName]
@@ -25,12 +23,9 @@ import { CameraComponent_EX } from '../../extensions/cameraComponent.mjs';
  */
 /**
  * 存储每个render对应的layer组
- */
-/**
  * @type {Map<pc.RenderComponent | pc.ModelComponent, LayerId[]>}
  */
 const layerMap = new Map();
-//@tool("OutlineCamera")
 export class OutlineCamera {
     // 默认选项
     /** @type {outlineCameraOptions} */
@@ -116,13 +111,12 @@ export class OutlineCamera {
             this.app.scene.layers.insert(outlineLayer, 0); // 将outlineLayer最先渲染
             this.outlineLayer = outlineLayer;
         }
-        this.outlineLayer.renderTarget = this.createRenderTarget(); // 给layer添加renderTarget;
         // 创建并添加描边相机
         if (!this.outlineCamera) {
             const outlineCameraEntity = new pc.Entity('outlineCameraEntity');
             const outlineCamera = outlineCameraEntity.addComponent("camera", {
                 clearColor: new pc.Color(0.0, 0.0, 0.0, 0.0), // 透明背景色
-                layers: [this.outlineLayer.id] // 只渲染outlineLayer
+                layers: [this.outlineLayer.id], // 只渲染outlineLayer
             }) /*as pc.CameraComponent*/;
             //this.app.root.addChild(outlineCameraEntity);
             this.toolOptions.mainCamera?.entity.addChild(outlineCameraEntity);
@@ -135,6 +129,7 @@ export class OutlineCamera {
                 this.toolOptions.mainCamera,
             )
         }
+        this.outlineCamera.renderTarget = this.createRenderTarget(); // 给layer添加renderTarget;
         // 创建描边特效并添加至相机
         if (this.outlineEffect) {
             // console.log("OutlineCamera#initEffect> remove effect", this.outlineEffect);
@@ -143,13 +138,12 @@ export class OutlineCamera {
         // 若传入了设置，则重新生成特效；若不传入设置，不重新生成，仅重置特效
         if (option) {
             this.outlineEffect = new PostEffectOutline(this.app.graphicsDevice, {
-                outlineLayer: this.outlineLayer,
+                // outlineLayer: this.outlineLayer,
                 color: option.color,
                 thickness: option.thickness,
             });
-        } else {
-            this.outlineEffect.refresh();
         }
+        this.outlineEffect.texture = this.outlineCamera.renderTarget.colorBuffer;
         this.toolOptions.mainCamera.postEffects.addEffect(this.outlineEffect); // 添加特效至相机
         // CameraComponent_EX#follow(), it's just for following fov/horizontalFov
         //this.outlineCamera.follow(this.toolOptions.mainCamera); // 同步相机

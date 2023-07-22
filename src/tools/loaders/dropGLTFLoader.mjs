@@ -5,12 +5,9 @@
  * 修改时间: 2022-07-22 10:44:59
  * 详情: 拖拽gltf到窗口加载模型
  */
-
 import * as pc from "playcanvas";
 import GlobalVariables from "../../utils/common/GlobalVariables.mjs";
-import { Tool } from "../../utils/helpers/toolBase.mjs";
 import * as MeshoptDecoder from "../../utils/libs/meshopt_decoder.mjs";
-
 // 文件类型
 interface File
 {
@@ -21,7 +18,6 @@ interface File
 type DropHandlerFunc = (files: Array<File>, resetScene: boolean) => void;
 // 模型后缀
 const modelExtensions = ['.gltf', '.glb', '.vox'];
-
 /**
  * 加载器事件-回调表
  */
@@ -29,27 +25,22 @@ interface DropGLTFLoaderEventsMap
 {
     modelLoaded: (entity: pc.Entity) => any
 }
-//@tool("DropGLTFLoader")
 export class DropGLTFLoader extends Tool<any, DropGLTFLoaderEventsMap>
 {
     private dropHandler: DropHandler;
-
     constructor()
     {
         super();
-
         this.dropHandler = new DropHandler((files: Array<File>, resetScene: boolean) =>
         {
             this.loadFiles(files);
         });
     }
-
     private isModelFilename(filename: string): boolean
     {
         const filenameExt = pc.path.getExtension(filename).toLowerCase();
         return modelExtensions.indexOf(filenameExt) !== -1;
     }
-
     // load gltf model given its url and list of external urls
     private loadGltf(gltfUrl: File, externalUrls: Array<File>, finishedCallback: (err: string | null, asset: pc.Asset) => void)
     {
@@ -60,31 +51,24 @@ export class DropGLTFLoader extends Tool<any, DropGLTFLoaderEventsMap>
         {
             if (gltfBuffer.extensions && gltfBuffer.extensions.EXT_meshopt_compression) {
                 const extensionDef = gltfBuffer.extensions.EXT_meshopt_compression;
-
                 const decoder = MeshoptDecoder;
-
                 decoder.ready.then(() =>
                 {
                     const byteOffset = extensionDef.byteOffset || 0;
                     const byteLength = extensionDef.byteLength || 0;
-
                     const count = extensionDef.count;
                     const stride = extensionDef.byteStride;
-
                     const result = new Uint8Array(count * stride);
                     const source = new Uint8Array(buffers[extensionDef.buffer].buffer,
                         buffers[extensionDef.buffer].byteOffset + byteOffset,
                         byteLength);
-
                     decoder.decodeGltfBuffer(result, count, stride, source, extensionDef.mode, extensionDef.filter);
-
                     continuation(null, result);
                 });
             } else {
                 continuation(null, null);
             }
         };
-
         const processImage = function (gltfImage: any, continuation: (err: string, result: any) => void)
         {
             const u: File = externalUrls.find((url) =>
@@ -106,13 +90,11 @@ export class DropGLTFLoader extends Tool<any, DropGLTFLoaderEventsMap>
                 continuation(null, null);
             }
         };
-
         const postProcessImage = (gltfImage: any, textureAsset: pc.Asset) =>
         {
             // max anisotropy on all textures
             textureAsset.resource.anisotropy = app.graphicsDevice.maxAnisotropy;
         };
-
         const processBuffer = function (gltfBuffer: any, continuation: (err: string, result: any) => void)
         {
             const u = externalUrls.find((url) =>
@@ -134,7 +116,6 @@ export class DropGLTFLoader extends Tool<any, DropGLTFLoaderEventsMap>
                 continuation(null, null);
             }
         };
-
         const containerAsset = new pc.Asset(gltfUrl.filename, 'container', gltfUrl, null, {
             // @ts-ignore TODO no definition in pc
             bufferView: {
@@ -156,30 +137,24 @@ export class DropGLTFLoader extends Tool<any, DropGLTFLoaderEventsMap>
         {
             finishedCallback(err, containerAsset);
         });
-
         app.assets.add(containerAsset);
         app.assets.load(containerAsset);
     }
-
     // add a loaded asset to the scene
     // asset is a container asset with renders and/or animations
     private addToScene(err: string, asset: pc.Asset)
     {
         const entity = asset.resource.instantiateRenderEntity();
-
         this.fire("modelLoaded", entity);
     }
-
     private loadFiles(files: Array<File>)
     {
         // convert single url to list
         if (!Array.isArray(files)) {
             files = [files];
         }
-
         // check if any file is a model
         const hasModelFilename = files.reduce((p, f) => p || this.isModelFilename(f.filename), false);
-
         if (hasModelFilename) {
             // kick off simultaneous asset load
             let awaiting = 0;
@@ -208,15 +183,12 @@ export class DropGLTFLoader extends Tool<any, DropGLTFLoaderEventsMap>
         return hasModelFilename;
     }
 }
-
 class DropHandler
 {
     dropHandler: DropHandlerFunc;
-
     constructor(dropHandler: DropHandlerFunc)
     {
         this.dropHandler = dropHandler;
-
         // configure drag and drop
         window.addEventListener('dragstart', (ev) =>
         {
@@ -232,11 +204,9 @@ class DropHandler
         }, false);
         window.addEventListener('drop', event => this.handleDrop(event), false);
     }
-
     // use webkitGetAsEntry to extract files so we can include folders
     private handleDrop(event: DragEvent)
     {
-
         const removeCommonPrefix = (urls: Array<File>) =>
         {
             const split = (pathname: string) =>
@@ -262,7 +232,6 @@ class DropHandler
                 }
             }
         };
-
         const resolveFiles = (entries: Array<FileSystemFileEntry>) =>
         {
             const files: Array<File> = [];
@@ -280,14 +249,12 @@ class DropHandler
                         if (files.length > 1) {
                             removeCommonPrefix(files);
                         }
-
                         // keep shift in to add files to the scene
                         this.dropHandler(files, !event.shiftKey);
                     }
                 });
             });
         };
-
         const resolveDirectories = (entries: Array<FileSystemEntry>) =>
         {
             let awaiting = 0;
@@ -314,15 +281,12 @@ class DropHandler
             };
             recurse(entries);
         };
-
         // first things first
         event.preventDefault();
-
         const items = event.dataTransfer.items;
         if (!items) {
             return;
         }
-
         const entries = [];
         for (let i = 0; i < items.length; ++i) {
             entries.push(items[i].webkitGetAsEntry());

@@ -5,55 +5,44 @@
  * 修改时间: 2022-08-09 15:24:08
  * 详情: 鼠标操作
  */
-
 import * as pc from "playcanvas";
-
 //import { InputEventsMap } from "../../utils/common/InputEventsMap";
-import { Tool } from "../../utils/helpers/toolBase.mjs";
-//import { tool } from "../../utils/helpers/useToolHelper.mjs";
-
 /**
  * 鼠标输入选项
+ * @typedef {object} TouchInputOptions
+ * @property {number} clickError
  */
-export interface TouchInputOptions { clickError: number };
-
-//@tool("TouchInputer")
-export class TouchInputer extends Tool<TouchInputOptions, InputEventsMap>
-{
-    // 默认选项
-    protected toolOptionsDefault: TouchInputOptions = {
-        clickError: 1
+export class TouchInputer extends pc.EventHandler /*Tool<TouchInputOptions, InputEventsMap>*/ {
+    /**
+     * 默认选项
+     * @type {TouchInputOptions}
+     */
+    toolOptionsDefault = {
+        clickError: 1,
     };
-
-    private pinchMidPoint: pc.Vec2;
-    private lastTouchPoint: pc.Vec2;
-    private touchDownPoint: pc.Vec2;
-    private touchUpPoint: pc.Vec2;
-    private lastPinchMidPoint: pc.Vec2;
-    private lastPinchDistance: number;
-
-    private isDragging: boolean;
-
-    constructor(option?: TouchInputOptions)
-    {
+    pinchMidPoint = new pc.Vec2();
+    lastTouchPoint = new pc.Vec2();
+    touchDownPoint = new pc.Vec2();
+    touchUpPoint = new pc.Vec2();
+    lastPinchMidPoint = new pc.Vec2();
+    isDragging = false;
+    lastPinchDistance = 0;
+    /**
+     * @param {TouchInputOptions} options
+     */
+    constructor(options) {
         super();
-
-        this.setOptions(option);
-
-        this.pinchMidPoint = new pc.Vec2();
-        this.lastTouchPoint = new pc.Vec2();
-        this.touchDownPoint = new pc.Vec2();
-        this.touchUpPoint = new pc.Vec2();
-        this.lastPinchMidPoint = new pc.Vec2();
-        this.lastPinchDistance = 0;
+        this.toolOptions = {
+            ...this.toolOptionsDefault,
+            ...options,
+        };
+        this.onEnable();
     }
-
     /**
     * 触屏操作开始事件回调
-    * @param event 触屏开始事件
+    * @param {pc.TouchEvent} event 触屏开始事件
     */
-    private onTouchStart(event: pc.TouchEvent): void
-    {
+    onTouchStart(event) {
         var touches = event.touches;
         if (touches.length == 1) {
             this.isDragging = true;
@@ -68,13 +57,11 @@ export class TouchInputer extends Tool<TouchInputOptions, InputEventsMap>
             this.calcMidPoint(touches[0], touches[1], this.lastPinchMidPoint);
         }
     }
-
     /**
     * 触屏操作结束，取消事件回调
-    * @param event 触屏结束，取消事件
+    * @param {pc.TouchEvent} event 触屏结束，取消事件
     */
-    private onTouchEndCancel(event: pc.TouchEvent): void
-    {
+    onTouchEndCancel(event) {
         var touches = event.touches;
         if (touches.length <= 0) {
             this.touchUpPoint.copy(this.lastTouchPoint);
@@ -103,13 +90,11 @@ export class TouchInputer extends Tool<TouchInputOptions, InputEventsMap>
             this.calcMidPoint(touches[0], touches[1], this.lastPinchMidPoint);
         }
     }
-
     /**
      * 触屏移动事件回调
-     * @param event 触屏移动事件
+     * @param {pc.TouchEvent} event 触屏移动事件
      */
-    private onTouchMove(event: pc.TouchEvent): void
-    {
+    onTouchMove(event) {
         var touches = event.touches;
         if (touches.length == 1) {
             const touch = touches[0];
@@ -139,45 +124,36 @@ export class TouchInputer extends Tool<TouchInputOptions, InputEventsMap>
             this.lastPinchMidPoint.copy(this.pinchMidPoint);
         }
     }
-
     /**
      * 计算中点
-     * @param pointA 起点
-     * @param pointB 终点
-     * @param result 中心点
+     * @param {{ x: number, y: number }} pointA 起点
+     * @param {{ x: number, y: number }} pointB 终点
+     * @param {pc.Vec2} result 中心点
      */
-    private calcMidPoint(pointA: { x: number, y: number }, pointB: { x: number, y: number }, result: pc.Vec2): void
-    {
+    calcMidPoint(pointA, pointB, result) {
         result.set(pointB.x - pointA.x, pointB.y - pointA.y);
         result.mulScalar(0.5);
         result.x += pointA.x;
         result.y += pointA.y;
     };
-
     /**
      * 获得两点距离
-     * @param pointA 原始点
-     * @param pointB 目标点
-     * @returns 两点距离
+     * @param {{ x: number, y: number }} pointA 原始点
+     * @param {{ x: number, y: number }} pointB 目标点
+     * @returns {number} 两点距离
      */
-    private getPinchDistance(pointA: { x: number, y: number }, pointB: { x: number, y: number }): number
-    {
+    getPinchDistance(pointA, pointB) {
         const dx = pointA.x - pointB.x;
         const dy = pointA.y - pointB.y;
-
         return Math.sqrt((dx * dx) + (dy * dy));
     }
-
-    protected override onEnable(): void
-    {
+    onEnable() {
         this.app.touch.on(pc.EVENT_TOUCHSTART, this.onTouchStart, this);
         this.app.touch.on(pc.EVENT_TOUCHEND, this.onTouchEndCancel, this);
         this.app.touch.on(pc.EVENT_TOUCHCANCEL, this.onTouchEndCancel, this);
         this.app.touch.on(pc.EVENT_TOUCHMOVE, this.onTouchMove, this);
     }
-
-    protected override onDisable(): void
-    {
+    onDisable() {
         this.app.touch.off(pc.EVENT_TOUCHSTART, this.onTouchStart, this);
         this.app.touch.off(pc.EVENT_TOUCHEND, this.onTouchEndCancel, this);
         this.app.touch.off(pc.EVENT_TOUCHCANCEL, this.onTouchEndCancel, this);

@@ -16,21 +16,19 @@ import * as pc from "playcanvas";
  */
 // 描边特效
 export class PostEffectOutline extends pc.PostEffect {
-    /** @type {pc.Texture} */
+    /** @type {pc.Texture|undefined} */
     texture;
     /** @type {Float32Array} */
     colorData;
-    /** @type {pc.Layer} */
-    outlineLayer;
     /**
      * 创建描边特效
      * @param {pc.GraphicsDevice} graphicsDevice 当前app的graphicsDevice
      * @param {object} option - 描边设置
-     * @param {pc.Layer} option.outlineLayer - 描边Layer，用于从中读取描边相机的内容
      * @param {pc.Color} option.color - 描边颜色
      * @param {number} [option.thickness] - 描边粗细
+     * @deprecated(param) {pc.Layer} [option.outlineLayer] - 描边Layer，用于从中读取描边相机的内容
      */
-    constructor(graphicsDevice, { outlineLayer, color, thickness = 1}) {
+    constructor(graphicsDevice, { color, thickness = 1}) {
         super(graphicsDevice);
         const vshader = `
             attribute vec2 aPosition;
@@ -74,8 +72,8 @@ export class PostEffectOutline extends pc.PostEffect {
             fshader,
         });
         this.colorData    = new Float32Array([color.r, color.g, color.b, color.a]);
-        this.texture      = outlineLayer.renderTarget.colorBuffer;
-        this.outlineLayer = outlineLayer;
+        //this.texture      = outlineLayer.renderTarget.colorBuffer;
+        //this.outlineLayer = outlineLayer;
     }
     /**
      * 渲染函数，由引擎自动每帧调用
@@ -94,10 +92,11 @@ export class PostEffectOutline extends pc.PostEffect {
         pc.drawFullscreenQuad(device, outputTarget, /*this.vertexBuffer*/undefined, this.shader, rect); // 用渲染结果覆盖整个屏幕，实现后期效果
     }
     /**
-     * Called via OutlineCamera#onResize
+     * Was called via OutlineCamera#onResize
+     * @deprecated
      * 刷新特效，一般用于窗口尺寸改变时
      */
     refresh() {
-        this.texture = this.outlineLayer.renderTarget.colorBuffer;
+        //this.texture = this.outlineLayer.renderTarget.colorBuffer;
     }
 }

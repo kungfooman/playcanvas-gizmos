@@ -10,15 +10,11 @@ import { findEntityForModelGraphNode } from "./findEntityForModelGraphNode.mjs";
 // import type { InputEventsMap } from "../utils/common/InputEventsMap";
 /**
  * 模型点选事件-回调表
- */
-/**
  * @typedef {Object} SelectorEventsMap
  * @property {(selectedNode: pc.GraphNode, preSelectedNode: pc.GraphNode) => any} select
  */
 /**
  * 模型点选选项
- */
-/**
  * @typedef {object} SelectorOptions
  * @property {Tool<any, InputEventsMap>} [inputHandler]
  * @property {pc.CameraComponent} [pickCamera]
@@ -30,9 +26,7 @@ import { findEntityForModelGraphNode } from "./findEntityForModelGraphNode.mjs";
  * @property {function} [pickCondition]
  * @property {pc.Layer[]} [excludeLayers]
  */
-//@tool("Selector")
-export class Selector extends pc.EventHandler // extends Tool/*<SelectorOptions, SelectorEventsMap>*/
-{
+export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOptions, SelectorEventsMap>*/
     // 默认选项
     /** @type {SelectorOptions} */
     toolOptionsDefault = {

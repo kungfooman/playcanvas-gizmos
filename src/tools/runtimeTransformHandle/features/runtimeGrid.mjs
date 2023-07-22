@@ -5,7 +5,6 @@ import { noAmbientEndPS } from "../utils/handleShader.mjs";
  * @property {pc.CameraComponent} mainCamera
  * @property {pc.Vec2} range
  */
-//@tool("RTH_RuntimeGrid")
 export class RTH_RuntimeGrid {
     /** @type {pc.Layer} */
     static _layer;
@@ -91,6 +90,7 @@ export class RTH_RuntimeGrid {
         mesh.update(pc.PRIMITIVE_LINES);
         const mat = new pc.StandardMaterial();
         mat.chunks.endPS = noAmbientEndPS;
+        mat.chunks.APIVersion = pc.CHUNKAPI_1_62;
         mat.useLighting = false;
         mat.useSkybox = false;
         mat.emissive.copy(color);
