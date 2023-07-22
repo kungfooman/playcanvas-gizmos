@@ -10,6 +10,7 @@ import {
     clearSelectionBox, drawSelectionBox
 } from "../../utils/func/drawSelectionBox/drawSelectionBox.mjs";
 import { MouseInputer } from '../input/mouseInput.mjs';
+import { findEntityForModelGraphNode } from "./findEntityForModelGraphNode.mjs";
 // import type { InputEventsMap } from "../../utils/common/InputEventsMap";
 /**
  * 模型多选事件-回调表
@@ -83,34 +84,27 @@ export class MultiSelector extends pc.EventHandler /*extends Tool<MultiSelectorO
      * @param {pc.Vec4} rect 框选区域
      */
     pick(rect) {
-        const options = this.toolOptions;
-        const canvas = this.app.graphicsDevice.canvas;
-        const canvasWidth = canvas.clientWidth;
-        const canvasHeight = canvas.clientHeight;
-        this.picker.resize(canvasWidth * options.pickAreaScale, canvasHeight * options.pickAreaScale);
-        this.picker.prepare(options.pickCamera, this.app.scene, this.pickLayers);
+        const { pickAreaScale, pickCamera } = this.toolOptions;
+        const { canvas } = this.app.graphicsDevice;
+        const { clientWidth, clientHeight } = canvas;
+        this.picker.resize(clientWidth * pickAreaScale, clientHeight * pickAreaScale);
+        this.picker.prepare(pickCamera, this.app.scene, this.pickLayers);
         const error = 3; // TODO:查看引擎源码，找到此处判断存在误差的原因
         const selected = this.picker.getSelection(
-            pc.math.clamp(rect.x, 0, canvasWidth) * options.pickAreaScale,
-            pc.math.clamp(rect.y, 0, canvasHeight) * options.pickAreaScale,
-            Math.min(canvasWidth - rect.x - error, rect.z) * options.pickAreaScale,
-            Math.min(canvasHeight - rect.y - error, rect.w) * options.pickAreaScale
+            pc.math.clamp(rect.x, 0, clientWidth)           * pickAreaScale,
+            pc.math.clamp(rect.y, 0, clientHeight)          * pickAreaScale,
+            Math.min(clientWidth  - rect.x - error, rect.z) * pickAreaScale,
+            Math.min(clientHeight - rect.y - error, rect.w) * pickAreaScale,
         );
         if (selected.length > 0) {
-            /** @type {pc.GraphNode[]} */
-            const pickNodes = [];
-            selected.forEach(meshInstance =>
-            {
-                if (meshInstance && meshInstance.node) {
-                    pickNodes.push(meshInstance.node);
-                }
-            });
+            const pickNodes = selected
+              .filter(meshInstance => meshInstance.node)
+              .map(meshInstance => findEntityForModelGraphNode(meshInstance.node));
             if (!this.isNodesEqual(this.pickNodes, pickNodes)) {
                 const prePickNodes = [...this.pickNodes];
                 this.fire("selecting", this.updatePickNodes(pickNodes), prePickNodes);
             }
-        }
-        else {
+        } else {
             this.fire("selecting", [], this.pickNodes);
             this.pickNodes = [];
         }

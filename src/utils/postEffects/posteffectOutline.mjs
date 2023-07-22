@@ -7,11 +7,12 @@
  */
 import * as pc from "playcanvas";
 /**
+ * (unused)
  * 描边特效参数
- * @typedef {Object} OutlineEffectOption
+ * @typedef {object} OutlineEffectOption
  * @property {pc.Layer} outlineLayer
  * @property {pc.Color} color
- * @property {Number} thickness 
+ * @property {number} thickness 
  */
 // 描边特效
 export class PostEffectOutline extends pc.PostEffect {
@@ -24,58 +25,47 @@ export class PostEffectOutline extends pc.PostEffect {
     /**
      * 创建描边特效
      * @param {pc.GraphicsDevice} graphicsDevice 当前app的graphicsDevice
-     * @param {object} option 描边设置
-     * @param {pc.Layer} option.outlineLayer 描边Layer，用于从中读取描边相机的内容
-     * @param {pc.Color} option.color 描边颜色
-     * @param {number} option.thickness 描边粗细
+     * @param {object} option - 描边设置
+     * @param {pc.Layer} option.outlineLayer - 描边Layer，用于从中读取描边相机的内容
+     * @param {pc.Color} option.color - 描边颜色
+     * @param {number} [option.thickness] - 描边粗细
      */
-    constructor(graphicsDevice, option) {
+    constructor(graphicsDevice, { outlineLayer, color, thickness = 1}) {
         super(graphicsDevice);
-        const vshader = [
-            "attribute vec2 aPosition;",
-            "",
-            "varying vec2 vUv0;",
-            "",
-            "void main(void)",
-            "{",
-            "    gl_Position = vec4(aPosition, 0.0, 1.0);",
-            "    vUv0 = (aPosition.xy + 1.0) * 0.5;",
-            "}"
-        ].join("\n");
-        const fshader = [
-            "precision " + graphicsDevice.precision + " float;",
-            "",
-            "#define THICKNESS " + (option.thickness ? option.thickness.toFixed(0) : 1),
-            "uniform float uWidth;",
-            "uniform float uHeight;",
-            "uniform vec4 uOutlineCol;",
-            "uniform sampler2D uColorBuffer;",
-            "uniform sampler2D uOutlineTex;",
-            "",
-            "varying vec2 vUv0;",
-            "",
-            "void main(void)",
-            "{",
-            "    vec4 texel1 = texture2D(uColorBuffer, vUv0);",
-            "    float sample0 = texture2D(uOutlineTex, vUv0).a;",
-            "    float outline = 0.0;",
-            "    if (sample0==0.0)",
-            "    {",
-            "        for (int x=-THICKNESS;x<=THICKNESS;x++)",
-            "        {",
-            "            for (int y=-THICKNESS;y<=THICKNESS;y++)",
-            "            {    ",
-            "                float sample=texture2D(uOutlineTex, vUv0+vec2(float(x)/uWidth, float(y)/uHeight)).a;",
-            "                if (sample>0.0)",
-            "                {",
-            "                    outline=1.0;",
-            "                }",
-            "            }",
-            "        } ",
-            "    }",
-            "    gl_FragColor = mix(texel1, uOutlineCol, outline * uOutlineCol.a);",
-            "}"
-        ].join("\n");
+        const vshader = `
+            attribute vec2 aPosition;
+            varying vec2 vUv0;
+            void main(void) {
+                gl_Position = vec4(aPosition, 0.0, 1.0);
+                vUv0 = (aPosition.xy + 1.0) * 0.5;
+            }
+        `;
+        const fshader = `
+            precision ${graphicsDevice.precision} float;
+            #define THICKNESS ${thickness.toFixed(0)}
+            uniform float uWidth;
+            uniform float uHeight;
+            uniform vec4 uOutlineCol;
+            uniform sampler2D uColorBuffer;
+            uniform sampler2D uOutlineTex;
+            varying vec2 vUv0;
+            void main(void) {
+                vec4 texel1 = texture2D(uColorBuffer, vUv0);
+                float sample0 = texture2D(uOutlineTex, vUv0).a;
+                float outline = 0.0;
+                if (sample0 == 0.0) {
+                    for (int x = -THICKNESS; x <= THICKNESS; x++) {
+                        for (int y = -THICKNESS; y <= THICKNESS; y++) {
+                            float sample = texture2D(uOutlineTex, vUv0+vec2(float(x)/uWidth, float(y)/uHeight)).a;
+                            if (sample > 0.0) {
+                                outline = 1.0;
+                            }
+                        }
+                    } 
+                }
+                gl_FragColor = mix(texel1, uOutlineCol, outline * uOutlineCol.a);
+            }
+        `;
         this.shader = new pc.Shader(graphicsDevice, {
             attributes: {
                 aPosition: pc.SEMANTIC_POSITION
@@ -83,9 +73,9 @@ export class PostEffectOutline extends pc.PostEffect {
             vshader,
             fshader,
         });
-        this.colorData = new Float32Array([option.color.r, option.color.g, option.color.b, option.color.a]);
-        this.texture = option.outlineLayer.renderTarget.colorBuffer;
-        this.outlineLayer = option.outlineLayer;
+        this.colorData    = new Float32Array([color.r, color.g, color.b, color.a]);
+        this.texture      = outlineLayer.renderTarget.colorBuffer;
+        this.outlineLayer = outlineLayer;
     }
     /**
      * 渲染函数，由引擎自动每帧调用
@@ -104,10 +94,10 @@ export class PostEffectOutline extends pc.PostEffect {
         pc.drawFullscreenQuad(device, outputTarget, /*this.vertexBuffer*/undefined, this.shader, rect); // 用渲染结果覆盖整个屏幕，实现后期效果
     }
     /**
+     * Called via OutlineCamera#onResize
      * 刷新特效，一般用于窗口尺寸改变时
      */
     refresh() {
-        console.log("REFRESH");
         this.texture = this.outlineLayer.renderTarget.colorBuffer;
     }
 }
