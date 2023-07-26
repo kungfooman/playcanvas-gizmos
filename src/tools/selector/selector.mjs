@@ -7,32 +7,45 @@
  */
 import * as pc from "playcanvas";
 import { findEntityForModelGraphNode } from "./findEntityForModelGraphNode.mjs";
+import { arrayCopy } from "../../utils/func/array.mjs";
 // import type { InputEventsMap } from "../utils/common/InputEventsMap";
 /**
+ * @typedef {import("../../utils/common/InputEventsMap.js").InputEventsMap} InputEventsMap
+ */
+/**
  * 模型点选事件-回调表
- * @typedef {Object} SelectorEventsMap
- * @property {(selectedNode: pc.GraphNode, preSelectedNode: pc.GraphNode) => any} select
+ * @typedef {object} SelectorEventsMap
+ * @property {(selectedNode: pc.GraphNode, previousEntities: pc.GraphNode) => any} select
+ */
+/**
+ * @typedef {object} TypedEventHandler
+ * @todo Actually implement this.
+ * @property {A} a
+ * @property {B} b
+ * @template A
+ * @template B
  */
 /**
  * 模型点选选项
+ * @todo create inputHandler if not given and remove if()'s
  * @typedef {object} SelectorOptions
- * @property {Tool<any, InputEventsMap>} [inputHandler]
+ * @property {TypedEventHandler<any, InputEventsMap>|null} [inputHandler]
  * @property {pc.CameraComponent} [pickCamera]
  * @property {number} [pickAreaScale]
- * @property {string} [pickTag]
+ * @property {string|null} [pickTag]
  * @property {boolean} [pickNull]
  * @property {boolean} [pickSame]
  * @property {boolean} [downSelect]
- * @property {function} [pickCondition]
- * @property {pc.Layer[]} [excludeLayers]
- */
+ * @property {function|null} [pickCondition]
+ * @property {pc.Layer[]|null} [excludeLayers]
+*/
 export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOptions, SelectorEventsMap>*/
     /**
      * 默认选项
-     * @type {SelectorOptions}
+     * @type {Required<SelectorOptions>}
      */
     toolOptionsDefault = {
-        //inputHandler: this.app.touch ? use("TouchInputer") : use("MouseInputer"),
+        inputHandler: null, //this.app.touch ? use("TouchInputer") : use("MouseInputer"),
         pickCamera: this.app.systems.camera.cameras[0],
         pickAreaScale: 0.25,
         pickTag: null,
@@ -50,16 +63,12 @@ export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOption
      * @type {pc.Picker}
      */
     picker;
+    /** @type {pc.Layer[]} */
+    _pickLayers;
     /**
-     * @private
-     * @type {pc.Layer[]}
+     * @type {Array<pc.GraphNode|pc.Entity>}
      */
-    pickLayers;
-    /**
-     * @todo turn into array
-     * @type {pc.GraphNode}
-     */
-    preSelectedNode;
+    previousEntities = [];
     /**
      * Used for type system simplification and prevention of GC
      * @type {Array<pc.GraphNode|pc.Entity>}
@@ -71,12 +80,15 @@ export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOption
      */
     constructor(options) {
         super();
+        /** @type {Required<SelectorOptions>} */
         this.toolOptions = {
             ...this.toolOptionsDefault,
             ...options,
         };
         this.picker = new pc.Picker(this.app, 0, 0);
-        this.setOptions(options);
+        this._pickLayers = this.toolOptions.excludeLayers
+            ? this.app.scene.layers.layerList.filter((layer) => !this.toolOptions.excludeLayers.includes(layer))
+            : this.app.scene.layers.layerList;
         this.onEnable();
     }
     /**
@@ -86,9 +98,6 @@ export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOption
      */
     setOptions(options) {
         // this.toolOptions.inputHandler = this.toolOptions.inputHandler || use("MouseInputer");
-        this.pickLayers = this.toolOptions.excludeLayers
-            ? this.app.scene.layers.layerList.filter((layer/*: pc.Layer*/) => !this.toolOptions.excludeLayers.includes(layer))
-            : this.app.scene.layers.layerList;
     }
     /**
      * 点选模型
@@ -98,47 +107,52 @@ export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOption
      * @param {boolean} event.ctrlKey - Toggle
      */
     pick(event) {
-        const toggle = event.ctrlKey;
-        const options = this.toolOptions;
-        if (options.pickCondition && !options.pickCondition()) {
+        const { app } = this;
+        if (!app) {
+            console.warn("Selector#pick> no app");
             return;
         }
-        const canvas = this.app.graphicsDevice.canvas;
+        const toggle = event.ctrlKey;
+        const { pickSame, pickTag, pickNull, pickCondition, pickAreaScale, pickCamera } = this.toolOptions;
+        if (pickCondition && !pickCondition()) {
+            return;
+        }
+        const canvas = app.graphicsDevice.canvas;
         const canvasWidth = canvas.clientWidth;
         const canvasHeight = canvas.clientHeight;
-        this.picker.resize(canvasWidth * options.pickAreaScale, canvasHeight * options.pickAreaScale);
-        this.picker.prepare(options.pickCamera, this.app.scene, this.pickLayers);
-        const selected = this.picker.getSelection(event.x * options.pickAreaScale, event.y * options.pickAreaScale);
+        this.picker.resize(canvasWidth * pickAreaScale, canvasHeight * pickAreaScale);
+        this.picker.prepare(pickCamera, app.scene, this._pickLayers);
+        const selected = this.picker.getSelection(event.x * pickAreaScale, event.y * pickAreaScale);
         this.pickedEntities.length = 0;
-        const fire = () => this.fire("select", this.pickedEntities, this.preSelectedNode, toggle);
+        const fire = () => {
+            this.fire("select", this.pickedEntities, this.previousEntities, toggle);
+            arrayCopy(this.previousEntities, this.pickedEntities);
+        }
         if (selected.length > 0 && selected[0]?.node) {
             const firstPick = findEntityForModelGraphNode(selected[0].node);
-            if (!options.pickTag || options.pickTag.length <= 0) {
-                if (!options.pickSame && this.preSelectedNode === firstPick) {
+            if (!pickTag || !pickTag.length) {
+                if (!pickSame && this.previousEntities.includes(firstPick)) {
                     return;
                 }
                 this.pickedEntities.push(firstPick);
                 fire();
-                this.preSelectedNode = firstPick;
             } else {
-                const selectedNode = this.getModelHasTag(firstPick, options.pickTag);
-                if (!options.pickSame && this.preSelectedNode === selectedNode) {
+                const selectedNode = this.getModelHasTag(firstPick, pickTag);
+                if (!pickSame && this.previousEntities.includes(selectedNode)) {
                     return;
                 }
                 this.pickedEntities.push(selectedNode);
                 fire();
-                this.preSelectedNode = selectedNode;
             }
-        } else if (options.pickNull) {
+        } else if (pickNull) {
             fire();
-            this.preSelectedNode = null;
         }
     }
     /**
      * 从下至上找到含有某个标签的模型对象
      * @param {pc.GraphNode} model 模型
      * @param {string} tag 标签
-     * @returns {pc.Entity} 包含标签的模型对象
+     * @returns {pc.GraphNode|pc.Entity} 包含标签的模型对象
      */
     getModelHasTag(model, tag) {
         let node = model;
@@ -148,13 +162,21 @@ export class Selector extends pc.EventHandler { // extends Tool/*<SelectorOption
         return node;
     }
     onEnable() {
-        if (this.toolOptions.downSelect) {
-            this.toolOptions.inputHandler.on("down", this.pick, this);
+        const { downSelect, inputHandler } = this.toolOptions;
+        if (!inputHandler) {
+            return;
+        }
+        if (downSelect) {
+            inputHandler.on("down", this.pick, this);
         } else {
-            this.toolOptions.inputHandler.on("click", this.pick, this);
+            inputHandler.on("click", this.pick, this);
         }
     }
     onDisable() {
+        const { inputHandler } = this.toolOptions;
+        if (!inputHandler) {
+            return;
+        }
         this.toolOptions.inputHandler.off("down", this.pick, this);
         this.toolOptions.inputHandler.off("click", this.pick, this);
     }

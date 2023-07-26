@@ -377,9 +377,7 @@ export class RuntimeTransformHandle extends pc.EventHandler {
                     this.trackEntities.push(target);
                 }
             }
-            if (!this.trackEntities.length) {
-                this.transformHandle.enabled = false;
-            }
+            this.transformHandle.enabled = !!this.trackEntities.length;
             return;
         }
         // 判断两次选择是否完全相同

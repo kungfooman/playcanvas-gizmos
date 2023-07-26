@@ -19,6 +19,7 @@ export * from "./utils/func/debugLine.mjs";
 export * from "./utils/func/drawSelectionBox/drawScreenQuad.mjs";
 export * from "./utils/func/drawSelectionBox/drawScreenRect.mjs";
 export * from "./utils/func/drawSelectionBox/drawSelectionBox.mjs";
+export * from "./utils/func/array.mjs";
 export * from "./utils/func/materialController.mjs";
 export * from "./utils/helpers/create-script-decorator.mjs";
 export * from "./utils/helpers/create-script-decorator_ex.mjs";

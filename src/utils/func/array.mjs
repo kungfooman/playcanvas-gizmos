@@ -16,3 +16,16 @@ export function arrayCompare(a, b) {
     }
     return true;
 }
+/**
+ * Copy src into array.
+ * @param {T[]} dst - The destination array, updated in-place.
+ * @param {T[]} src - The source array.
+ * @template T
+ */
+export function arrayCopy(dst, src) {
+    const n = src.length;
+    dst.length = n;
+    for (let i = 0; i < n; i++) {
+        dst[i] = src[i];
+    }
+}
