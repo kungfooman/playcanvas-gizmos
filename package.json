@@ -20,8 +20,8 @@
 		"_docs-html": "npx --no-install rimraf docs && npx typedoc --options build-scripts/typedoc.html.js --plugin none",
 		"_docs-readme": "node ./build-scripts/build-readme.js"
 	},
-	"devDependencies": {
-		"playcanvas": "^1.56.0"
+	"dependencies": {
+		"playcanvas": "^1.67.3"
 	},
 	"files": [
 		"bin/*",
@@ -33,17 +33,19 @@
 	},
 	"keywords": [
 		"utils",
-		"typescript",
+		"javascript",
 		"extensions",
-		"playcanvas"
+		"playcanvas",
+		"gizmo",
+		"gizmos",
+		"rotation",
+		"translation",
+		"scale"
 	],
-	"author": "fbplus",
+	"author": "fbplus and Hermann Rolfes",
 	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/TheFBplus/pc-ex/issues"
 	},
-	"homepage": "https://github.com/TheFBplus/pc-ex#readme",
-	"dependencies": {
-		"ts-to-jsdoc": "^1.2.1"
-	}
+	"homepage": "https://github.com/TheFBplus/pc-ex#readme"
 }
